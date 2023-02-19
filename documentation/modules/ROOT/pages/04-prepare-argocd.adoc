@@ -1,0 +1,182 @@
+= Prepare ArgoCD
+include::_attributes.adoc[]
+
+*ArgoCD* is the *GitOps* engine *Red Hat OpenShift GitOps* rely on. It should have been installed previously in xref:02-prepare-cluster.adoc#deploying-core-components[Deploying core components].
+
+
+[#checking-argocd]
+== Checking ArgoCD
+
+include::partial$argocd-tests.adoc[]
+
+[#log-in-argocd]
+== Log in ArgoCD with CLI
+
+Well *ArgoCD* is healthy, now let's see if the *CLI* works properly by trying to log in with it (you should have it installed as stated in xref:01-setup.adoc#prerequisite[Prerequisites] section).
+
+[IMPORTANT]
+====
+As you can see below there are to possibilities of logging in *ArgoCD*, one from a laptop or PC and the other from the OpenShift web terminal. If you run the former then you'll be redirected to OpenShift Web Console to enter your credentials:
+
+- USERNAME: {username}
+- PASSWORD: {password}
+
+If you choose the latter then you won't need to use your credentials, you will use the `admin` user. In order to run the lab it doesn't matter which one you choose, in a real scenario though you would probably have to use the former option.
+
+====
+
+[tabs]
+====
+laptop::
++
+--
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+argocd login {argocd-server} --insecure --sso --grpc-web
+----
+
+You may see this message, if that is the case click on `Allow selected permissions` and continue.
+
+image::argocd-login-permissions.png[ArgoCD Login Permissions]
+
+After being successfully logged in, you should be redirected to localhost:8085 with a message of successful authentication and in the terminal output you should see something similar to this.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+Opening browser for authentication
+Performing authorization_code flow login: https://{argocd-server}/api/dex/auth?access_type=offline&client_id=argo-cd-cli&code_challenge=VVX5Feb1ySsRQAUNfvSrolTt8yak2HKjUZ-YjuQgItI&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A8085%2Fauth%2Fcallback&response_type=code&scope=openid+profile+email+groups+offline_access&state=zsQHLaywsv
+Authentication successful
+'{username}' logged in successfully
+Context '{argocd-server}' updated
+----
+--
+web-terminal::
++
+--
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+export ARGOCD_HOST=$(oc get route/openshift-gitops-server -o jsonpath='{.status.ingress[0].host}' -n openshift-gitops)
+
+export ARGOCD_USERNAME=admin
+export ARGOCD_PASSWORD=$(oc get secret openshift-gitops-cluster -o jsonpath='{.data.admin\.password}' -n openshift-gitops | base64 -d)
+
+argocd login $ARGOCD_HOST --insecure --grpc-web --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD
+----
+--
+====
+
+[#register-repositories]
+== Register Repositories
+
+In this guide we cover the case of a protected git repository that needs to be interacted with from a system and you don't want your personal password to be exposed that’s why you have created a *Personal Access Token*.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+argocd --insecure repo add https://{gitea-host}/{username}/gramola.git --username {username} --password ${GIT_PAT} --upsert --insecure-skip-server-verification --grpc-web
+----
+
+Run this command to list the registered repositories.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+argocd --insecure repo list --grpc-web
+----
+
+This is a typical response.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+TYPE  NAME  REPO                                                                                                           INSECURE  OCI    LFS    CREDS  STATUS      MESSAGE
+git         https://{gitea-host}/user1/gramola.git          false     false  false  true   Successful  
+----
+
+[#register-additional-clusters]
+== Register Additional Clusters{empty}footnote:[This an optional chapter, run it only if you have an additional cluster]
+
+First make sure there is a context with proper credentials, in order to achieve this please log in the additional cluster.
+
+CAUTION: *ADDITIONAL_API_SERVER_TOKEN* is a token of a user with cluster-admin permissions on the additional cluster, *ADDITIONAL_API_SERVER_MANAGED* is the host and port *without http(s)* of the additional cluster.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+export ADDITIONAL_API_SERVER_TOKEN=%ADDITIONAL_API_SERVER_TOKEN%
+export ADDITIONAL_API_SERVER_MANAGED=api.%ADDITIONAL_BASE_SUBDOMAIN%:6443
+oc login --token=${ADDITIONAL_API_SERVER_TOKEN} --server=https://${ADDITIONAL_API_SERVER_MANAGED}
+----
+
+Give a name to the additional cluster and add it with the next command.
+
+TIP: *CLUSTER_NAME* is a name you choose for your cluster.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+export CLUSTER_NAME={additional-cluster-name}
+CONTEXT_NAME=$(oc config get-contexts -o name | grep ${ADDITIONAL_API_SERVER_MANAGED})
+argocd --insecure cluster add ${CONTEXT_NAME} --name ${CLUSTER_NAME} --grpc-web
+----
+
+CAUTION: You will see the following message warning you that if you proceed you will create a `ServiceAccount` called `argocd-manager` with full cluter lever admin privileges. Don't worry and  please type `y` and press kbd:[Enter].
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+WARNING: This will create a service account `argocd-manager` on the cluster referenced by context `default/api-cluster-...opentlc-com:6443/opentlc-mgr` with full cluster level admin privileges. Do you want to continue [y/N]? y
+----
+
+Check if your cluster has been added correctly.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+argocd --insecure cluster list --grpc-web
+----
+
+This is the expected output:
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+SERVER                                   NAME          VERSION  STATUS      MESSAGE                                              PROJECT
+https://api.cluster-...opentlc.com:6443  aws-managed1           Unknown     Cluster has no application and not being monitored.  
+https://kubernetes.default.svc           in-cluster    1.23     Successful   
+----
+
+Now, it's time to log back in the main cluster.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc login -u {username} -p {password} --server=https://api.{api-domain}
+----
+
+[#project-definitions]
+== Project definitions
+
+In ArgoCD you can constrain which repositories and destinations can be linked with the definition of an application, in our case we are not constraining but we still have created project definitions to be prepared for future needs. 
+
+Run this command to see the list of project definitions.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+argocd --insecure proj list --grpc-web
+----
+
+This is the expected result, one project definition for development and another one for testing.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+NAME                  DESCRIPTION           DESTINATIONS  SOURCES  CLUSTER-RESOURCE-WHITELIST  NAMESPACE-RESOURCE-BLACKLIST  SIGNATURE-KEYS  ORPHANED-RESOURCES
+default                                     *,*           *        */*                         <none>                        <none>          disabled
+gramola-project-dev   Gramola Project Dev   *,*           *        */*                         <none>                        <none>          disabled
+gramola-project-test  Gramola Project Test  *,*           *        */*                         <none>                        <none>          disabled
+----

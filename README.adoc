@@ -1,0 +1,11 @@
+Check the build courseware https://redhat-scholars.github.io/build-course[documentation]  on how folder structure, how to use macros and other gotchas
+
+http://localhost:3000/street-java-on-openshift-guide/index.html?USERNAME=user1&PASSWORD=openshift&BASE_SUBDOMAIN=cluster-fwznm.fwznm.sandbox513.opentlc.com
+
+http://localhost:3000/street-java-on-openshift-guide/01-setup.html?USERNAME=user1&PASSWORD=openshift&BASE_SUBDOMAIN=cluster-fwznm.fwznm.sandbox513.opentlc.com&USE_QUAY_IO=yes
+
+http://localhost:3000/street-java-on-openshift-guide/01-setup.html?USERNAME=opentlc-mgr&PASSWORD=r3dh4t1!&BASE_SUBDOMAIN=cluster-fwznm.fwznm.sandbox513.opentlc.com
+
+
+
+http://localhost:3000/street-java-on-openshift-guide/05-deploy-gramola-with-gitops.html?USERNAME=user1&PASSWORD=openshift&BASE_SUBDOMAIN=cluster-fwznm.fwznm.sandbox513.opentlc.com&ADDITIONAL_API_SERVER_TOKEN=sha256~wMZ6CBHhpQjU1HjAjqEjIZEZ_d1O53Kiociral7S9Jo&ADDITIONAL_API_SERVER_MANAGED=api.cluster-mst5c.mst5c.sandbox1770.opentlc.com:6443

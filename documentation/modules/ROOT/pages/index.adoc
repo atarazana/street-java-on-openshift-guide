@@ -1,0 +1,24 @@
+= Welcome to Street Java on OpenShift
+:page-layout: home
+:!sectids:
+
+[.text-center.strong]
+== Introduction
+
+Have you had the feeling of being absolutely useless and helpless once you're alone and try to do what you just did in a super-guided kubernetes lab?
+
+Well, you're no alone, and this lab is for you. In this lab you'll start where you left it, you have deployed your application and feel happy. Let's say this is the app you have deployed, coded name `Street Java`:
+
+image::street-java-topology.png[Street Java Topology]
+
+We have called this app Street Java just because this is what it is, Java, normal java in two flavors, deployed as containers in OpenShift... and because it's street Java is real stuff... it [.line-through]#could# will fail and you have to fix it.
+
+By the way, the app consists of three microservices:
+
+* *Gateway*, java API gateway coded using link:https://code.quarkus.io/[Quarkus]
+* *Service*, java REST service coded using link:https://start.spring.io[Spring Boot]
+* *Database*, link:https://postgresql.org[PostrgreSQL] database
+
+This is how the super-basic UI of our app looks like:
+
+image::street-java-ui.png[Street Java UI]

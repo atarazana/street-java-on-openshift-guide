@@ -1,0 +1,7 @@
+curl -X POST -k  https://myregistry-quay-quay-system.apps.cluster-fwznm.fwznm.sandbox513.opentlc.com/api/v1/user/initialize 
+--header 'Content-Type: application/json' --data '{ "username": "quayadmin", "password":"quaypass123", "email": "quayadmin@example.com", "access_token": true}'
+
+curl -X GET -k -H "Authorization: Bearer 38BGAA35SNPBBFLKEPJ3A8R3ARLV0SHJN94U8PDP" \
+  https://myregistry-quay-quay-system.apps.cluster-fwznm.fwznm.sandbox513.opentlc.com/api/v1/superuser/users/
+
+

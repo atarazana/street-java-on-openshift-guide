@@ -1,0 +1,104 @@
+= Deploy The App
+include::_attributes.adoc[]
+
+Everything we do in this section requires that you have fulfilled the xref:01-setup.adoc#prerequisite[prerequisites] section and you're logged in your OpenShift cluster.
+
+So if not already logged in, please do it now.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc login -u {username} -p {password} --server=https://api.{api-domain}
+----
+
+[#checking-helm-cli]
+== Check `heml` cli works properly
+
+As you already know deploying applications in kubernetes can be done in many ways... we have decided to choose `helm` but before we actually use it to deploy `Street Java` let's be sure the binary is in the `PATH` and the version is the one required... Please run this command:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+helm version
+----
+
+Expect something like this:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+version.BuildInfo{Version:"v3.6.2+5.el8", GitCommit:"eb607dd4f123eaedab662cef21008d177f2c3426", GitTreeState:"clean", GoVersion:"go1.15.13"}
+----
+
+[#installing-street-java]
+== Installing Street Java
+
+Ok, we're ready to deploy our application. First we'll create a project:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc new project {street-java-namespace}
+----
+
+Now let's install our helm chart:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+helm install street-java helm/street-java
+----
+
+This is the expected result:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+NAME: street-java
+LAST DEPLOYED: Thu Feb 16 19:19:35 2023
+NAMESPACE: street-java
+STATUS: deployed
+REVISION: 1
+----
+
+Awesome, you did it, but just to be sure open the next link to check if the app works properly.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/topology/ns/{street-java-namespace}?view=graph
+----
+
+Well aparently something is not ok... you should see something like this, and that's not a good sign.
+
+image:street-java-topology-fail.png[alt]
+
+In fact if you run the following command you'll see that no pods have been created!
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc get deploy -n {street-java-namespace}
+----
+
+You'll get:
+
+NOTE: 0/1 in `READY` means 0 of 1 containers are ready... and we don't want that!
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+fruit-gateway      0/1     0            0           11m
+fruit-service      0/1     0            0           11m
+fruit-service-db   0/1     0            0           11m
+----
+
+
+// [.console-input]
+// [source,bash, subs="+attributes"]
+// ----
+// https://{street-java-link}
+// ----
+
+// If you see the app UI and all is green then you can look one side and the other, grin and feel awesome... you'll feel bad later.

@@ -1,0 +1,35 @@
+= Setup
+include::_attributes.adoc[]
+
+[#prerequisite]
+== Prerequisite CLI tools
+
+include::partial$prerequisites.adoc[]
+
+//include::partial$prerequisites-optional.adoc[]
+
+
+[#openshift]
+== Setup OpenShift 4
+
+:profile: my_profile
+
+include::partial$openshift-setup.adoc[]
+
+
+ifeval::["{use-quay-io}" == "true"]
+[#container-registry-account]
+== Container Registry Account
+
+include::partial$create-quay-account.adoc[]
+
+endif::[]
+
+[#download-tutorial]
+== Get tutorial sources
+
+Even though in a following chapter you will need to fork this repository you still need to clone it locally first to bootstrap the environment.
+
+:tutorial-url: https://github.com/atarazana/street-java-on-openshift.git
+:folder: street-java-guide
+include::partial$download-sources.adoc[]

@@ -1,0 +1,184 @@
+= Checking Pipelines Webhooks
+include::_attributes.adoc[]
+
+Webhooks are in place, it's time to check if they are working correctly. Red Hat OpenShift Pipelines Operator generates `Deployments` and `Routes` objects starting from the definition of `EventListeners`. The tests you're going to run here are simply testing that those deployments are running properly, the same technique can be used to debug `TriggerBinding` and `TriggerTemplate` attribute mapping and `EventListener` cel{empty}footnote:[https://tekton.dev/docs/triggers/interceptors/#cel-interceptors] filters.
+
+[#check-events-ci-web-hook]
+== Check Events CI Web Hook
+
+Let’s check if the webhook is working, please open a new terminal and execute the following command.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+export USERNAME="{username}"
+export CICD_NAMESPACE="gramola-cicd-$\{USERNAME}"
+oc logs -f deployment/el-events-ci-pl-push-{git-provider}-listener -n ${CICD_NAMESPACE}
+----
+
+You should get something like this, leave the terminal open and please go back to the other terminal window.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+...
+{"level":"info","ts":"2022-02-14T17:33:55.087Z","logger":"eventlistener","caller":"eventlistenersink/main.go:181","msg":"Listen and serve on port 8080","commit":"fbb0fd1","knative.dev/controller":"eventlistener"}
+----
+
+Now if you push a change in the code the CI pipeline for `events` should we kicked off but for now let's check that the listener is working properly by running a test delivery against the listener URL itself. Run the following command:
+
+NOTE: The `EventListener` expects a `push` event, hence because we're sending a `dummy` payload and event of type `dummy` we should expect and error but the test will be successful because we're testing the frontend of the `EventListener` here.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+curl -X POST -k  http://$(oc get route/el-events-ci-pl-push-{git-provider}-listener  -n $CICD_NAMESPACE -o jsonpath='{.spec.host}') \
+ -H 'X-GitHub-Event: dummy' -H 'X-GitHub-Event-Type: dummy' -H 'X-Gitea-Event: dummy' -H 'X-Gitea-Event-Type: dummy' \
+ -H 'Content-Type: application/json' \
+ --data '{ "dummy": "dummy"}'
+----
+
+This is the expected output in the terminal where the `oc log` command is running.
+
+[.console-output]
+[source,bash, subs="+attributes"]
+----
+...
+{"level":"info","ts":"2022-09-12T16:30:11.860Z","logger":"eventlistener","caller":"sink/sink.go:234","msg":"interceptor stopped trigger processing: rpc error: code = FailedPrecondition desc = event type dummy is not allowed","commit":"fbb0fd1","knative.dev/controller":"eventlistener","eventlistener":"events-ci-pl-push-gitea-listener","namespace":"gramola-cicd-user1","eventlistenerUID":"2a940da6-e625-4f18-98b2-3bf44f48668a","/triggers-eventid":"507dd6b4-8715-4c6a-a89e-b703a800c230","/trigger":"github-listener"}
+----
+
+Stop the log output with kbd:[Ctrl+C].
+
+Now you can do the same for the other webhooks, this time with a lot less wording.
+
+[#check-events-cd-web-hook]
+== Check Events CD Web Hook
+
+Please open a new terminal, or reuse the one where you run the previous tests, and execute the following command.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+export USERNAME="{username}"
+export CICD_NAMESPACE="gramola-cicd-$\{USERNAME}"
+oc logs -f deployment/el-events-cd-pl-pr-{git-provider}-listener -n ${CICD_NAMESPACE}
+----
+
+You should get something like this, leave the terminal open and please go back to the other terminal window.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+...
+{"level":"info","ts":"2022-09-12T10:04:59.451Z","logger":"eventlistener","caller":"eventlistenersink/main.go:181","msg":"Listen and serve on port 8080","commit":"fbb0fd1","knative.dev/controller":"eventlistener"}
+----
+
+Run the following command that sends a test `dummy` payload and event to the listener.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+curl -X POST -k  http://$(oc get route/el-events-cd-pl-pr-{git-provider}-listener  -n $CICD_NAMESPACE -o jsonpath='{.spec.host}') \
+ -H 'X-GitHub-Event: dummy' -H 'X-GitHub-Event-Type: dummy' -H 'X-Gitea-Event: dummy' -H 'X-Gitea-Event-Type: dummy' \
+ -H 'Content-Type: application/json' \
+ --data '{ "dummy": "dummy"}'
+----
+
+Again this is the expected output in the terminal where the `oc log` command is running.
+
+[.console-output]
+[source,bash, subs="+attributes"]
+----
+...
+{"level":"info","ts":"2022-09-12T16:43:27.906Z","logger":"eventlistener","caller":"sink/sink.go:234","msg":"interceptor stopped trigger processing: rpc error: code = FailedPrecondition desc = event type dummy is not allowed","commit":"fbb0fd1","knative.dev/controller":"eventlistener","eventlistener":"events-cd-pl-pr-gitea-listener","namespace":"gramola-cicd-user1","eventlistenerUID":"e16440c0-e329-4ba9-bdbc-5af516b56a2a","/triggers-eventid":"29307d50-f977-4ead-bad6-7007bb5b4d64","/trigger":"github-listener"}
+----
+
+Stop the log output with kbd:[Ctrl+C].
+
+[#check-gateway-ci-web-hook]
+== Check Gateway CI Web Hook
+
+Please open a new terminal, or reuse the one where you run the previous tests, and execute the following command.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+export USERNAME="{username}"
+export CICD_NAMESPACE="gramola-cicd-$\{USERNAME}"
+oc logs -f deployment/el-gateway-ci-pl-push-{git-provider}-listener -n ${CICD_NAMESPACE}
+----
+
+You should get something like this, leave the terminal open and please go back to the other terminal window.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+...
+{"level":"info","ts":"2022-09-12T10:04:59.586Z","logger":"eventlistener","caller":"eventlistenersink/main.go:181","msg":"Listen and serve on port 8080","commit":"fbb0fd1","knative.dev/controller":"eventlistener"}
+----
+
+Run the following command that sends a test `dummy` payload and event to the listener.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+curl -X POST -k  http://$(oc get route/el-gateway-ci-pl-push-{git-provider}-listener  -n $CICD_NAMESPACE -o jsonpath='{.spec.host}') \
+ -H 'X-GitHub-Event: dummy' -H 'X-GitHub-Event-Type: dummy' -H 'X-Gitea-Event: dummy' -H 'X-Gitea-Event-Type: dummy' \
+ -H 'Content-Type: application/json' \
+ --data '{ "dummy": "dummy"}'
+----
+
+Again this is the expected output in the terminal where the `oc log` command is running.
+
+[.console-output]
+[source,bash, subs="+attributes"]
+----
+...
+{"level":"info","ts":"2022-09-12T16:47:55.330Z","logger":"eventlistener","caller":"sink/sink.go:234","msg":"interceptor stopped trigger processing: rpc error: code = FailedPrecondition desc = event type dummy is not allowed","commit":"fbb0fd1","knative.dev/controller":"eventlistener","eventlistener":"gateway-ci-pl-push-gitea-listener","namespace":"gramola-cicd-user1","eventlistenerUID":"f04cb7d2-4fe6-4447-a253-b434a9f8efd0","/triggers-eventid":"4e7af3eb-e15f-432d-8802-2506b3d741e6","/trigger":"github-listener"}
+----
+
+Stop the log output with kbd:[Ctrl+C].
+
+[#check-gateway-cd-web-hook]
+== Check Gateway CD Web Hook
+
+Please open a new terminal, or reuse the one where you run the previous tests, and execute the following command.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+export USERNAME="{username}"
+export CICD_NAMESPACE="gramola-cicd-$\{USERNAME}"
+oc logs -f deployment/el-gateway-cd-pl-pr-{git-provider}-listener -n ${CICD_NAMESPACE}
+----
+
+You should get something like this, leave the terminal open and please go back to the other terminal window.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+...
+{"level":"info","ts":"2022-09-12T10:04:59.991Z","logger":"eventlistener","caller":"eventlistenersink/main.go:181","msg":"Listen and serve on port 8080","commit":"fbb0fd1","knative.dev/controller":"eventlistener"}
+----
+
+Run the following command that sends a test `dummy` payload and event to the listener.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+curl -X POST -k  http://$(oc get route/el-gateway-cd-pl-pr-{git-provider}-listener  -n $CICD_NAMESPACE -o jsonpath='{.spec.host}') \
+ -H 'X-GitHub-Event: dummy' -H 'X-GitHub-Event-Type: dummy' -H 'X-Gitea-Event: dummy' -H 'X-Gitea-Event-Type: dummy' \
+ -H 'Content-Type: application/json' \
+ --data '{ "dummy": "dummy"}'
+----
+
+Again this is the expected output in the terminal where the `oc log` command is running.
+
+[.console-output]
+[source,bash, subs="+attributes"]
+----
+...
+{"level":"info","ts":"2022-09-12T16:50:54.425Z","logger":"eventlistener","caller":"sink/sink.go:234","msg":"interceptor stopped trigger processing: rpc error: code = FailedPrecondition desc = event type dummy is not allowed","commit":"fbb0fd1","knative.dev/controller":"eventlistener","eventlistener":"gateway-cd-pl-pr-gitea-listener","namespace":"gramola-cicd-user1","eventlistenerUID":"f09da2a6-b828-4869-9b2c-42afad8cd849","/triggers-eventid":"fc790720-577e-49f6-992a-b893b71b0986","/trigger":"github-listener"}
+----
+
+Stop the log output with kbd:[Ctrl+C].

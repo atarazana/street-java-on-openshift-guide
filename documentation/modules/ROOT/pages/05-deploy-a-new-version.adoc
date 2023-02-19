@@ -1,0 +1,46 @@
+= Deploy a new version
+include::_attributes.adoc[]
+
+Now, let's do something easy, apparently harmless, let's build a new image and deploy it. Myabe you didn't notice but you were using a pre-built image part of the lab... if you didn't notice till now don't tell your colleagues, look smart and scratch your chin as if just had another good idea.
+
+[#anatomy-of-your-chart]
+== Anatomy of your Chart
+
+You have deployed the Street Java app using a `helm chart`. Let's have a look at the relevant parts of it.
+
+*The chart*
+
+The chart resides at `helm/street-java` there you will find:
+
+- *Chart.yaml*, definition of the chart and where you define the dependencies
+- *charts*, folder containing the chart your chart depend on
+- *values.yaml*, general values file that tune youb
+
+_Chart.yaml_
+
+[source,yaml,attributes]
+----
+apiVersion: v2
+name: street-java <1>
+description: Helm Chart to Deploy Street Java
+
+type: application
+ 
+version: 0.1.0
+
+appVersion: "1.0.0"
+
+dependencies: <2>
+  - name: fruit-gateway
+  - name: fruit-service
+----
+<1> Chart name
+<2> Chart your chart depend on
+
+*The depencies*
+
+As you saw above our chart depends on two charts: `fruit-gateway` and `fruit-service`.
+
+This charts are in folder `helm/street-java/charts` and each of them consists of the same sections as the general chart: `Chart.yaml`, `charts` and `values` and another folder `templates`.
+
+Is in the `templates` folder where you will find templates to create the `Deployments`, `Services`, `Routes`, `ConfigMaps`, etc.

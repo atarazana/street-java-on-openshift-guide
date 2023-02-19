@@ -1,0 +1,31 @@
+:experimental: true
+:source-highlighter: highlightjs
+
+:base-domain: %BASE_SUBDOMAIN%
+:api-domain: {base-domain}:6443
+:cluster-subdomain: apps.{base-domain}
+:username: %USERNAME%
+:password: %PASSWORD%
+
+:namespace-suffix: {username}
+:street-java-namespace: street-java-{username}
+
+:street-java-link: fruit-gateway-{street-java-namespace}.{cluster-subdomain}
+
+:argocd-server: openshift-gitops-server-openshift-gitops.{cluster-subdomain}
+
+:use-quay-io: false
+:quay-server: myregistry-quay-quay-system.{cluster-subdomain}
+:quay-namespace: quay-system
+
+:openshift-console-host: console-openshift-console.{cluster-subdomain}
+:openshift-web-terminal: console-openshift-console.{cluster-subdomain}
+
+:gramola-gateway-dev-host: gateway-gramola-dev-{username}.{cluster-subdomain}
+:gramola-gateway-test-host: gateway-gramola-test-{username}.{cluster-subdomain}
+:additional-gramola-gateway-test-host: gateway-gramola-test-{username}.{additional-cluster-subdomain}
+
+:project_name: {username}%CLUSTER_SUBDOMAIN%
+
+:dash: %2D
+:dash-dash: dummy

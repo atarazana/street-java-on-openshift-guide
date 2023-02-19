@@ -1,0 +1,27 @@
+Checking the status of an operators is a bit counterintuitive because we that something bad is false. As you can see below `Type` of condition is `CatalogSourcesUnhealthy`, which is a bad thing, but the `Status` is `False` so it's a good thing ;-)
+
+[source,bash, subs="+macros,+attributes"]
+----
+Conditions:
+   Last Transition Time:  2019-07-29T13:42:57Z
+   Message:               all available catalogsources are healthy
+   Reason:                AllCatalogSourcesHealthy
+   Status:                False
+   Type:                  CatalogSourcesUnhealthy
+----
+
+Because the message is less counterintuitive  let's check that instead. Please run this command to check the status of the operator.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+echo $(oc get subs/openshift-gitops-operator -n openshift-operators -o jsonpath='{.status.conditions[0].message}')
+----
+
+If the operator is fine you should get this response.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+all available catalogsources are healthy
+----

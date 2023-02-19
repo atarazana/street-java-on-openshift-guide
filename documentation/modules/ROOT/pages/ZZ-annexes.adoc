@@ -1,0 +1,61 @@
+== Add plugin section to ArgoCD Custom Resource
+
+We’re using a custom plugin called `kustomized-helm` if you’re
+interested have a look at section `configManagementPlugins` in
+`./util/bootstrap/2.openshift-gitops-patch`.
+
+== Adjust permissions of Service Account
+
+[source,sh]
+----
+oc apply -f util/argocd-service-account-permissions.yaml
+----
+
+
+=== GitHub
+
+You can find an easy guide step by step by following this link:
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token[Creating
+a personal access token - GitHub Docs]
+
+NOTE: We’re covering Github in this guide if you use a different git server you may have to do some adjustments.
+
+In order to refer to a repository in ArgoCD you have to register it before, the next command will do this for you asking for the repo url
+and the the Personal Access Token (PAT) to access to the repository.
+
+== Useful commands
+
+=== Sync Root Apps alone
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+argocd --insecure app sync gramola-root-app-dev
+argocd --insecure app sync gramola-root-app-test
+argocd --insecure app sync gramola-root-app-test-cloud
+----
+
+=== Sync apps manually
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+argocd --insecure app sync events-app-dev
+argocd --insecure app sync events-app-test
+argocd --insecure app sync events-app-test-cloud
+----
+
+=== Sync children apps (app of apps)
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+argocd --insecure app sync -l app.kubernetes.io/instance=gramola-root-app
+argocd --insecure app sync -l app.kubernetes.io/instance=gramola-root-app-dev
+argocd --insecure app sync -l app.kubernetes.io/instance=gramola-root-app-test
+argocd --insecure app sync -l app.kubernetes.io/instance=gramola-root-app-test-cloud
+----
+
+== Github Webhook payload
+
+NOTE: https://github.com/drone/go-scm/blob/master/scm/driver/gitea/testdata/webhooks/push.json

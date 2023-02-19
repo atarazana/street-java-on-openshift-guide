@@ -1,0 +1,145 @@
+= Limit What?
+include::_attributes.adoc[]
+
+Ok, so the app is not deployed correctly... What's going on? What can you do?
+
+[#checking-deployments]
+== Checking Deployments
+
+One of the first things you could do is checking one of the `Deployment` objects, in fact the `status` stance.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc get deployment/fruit-gateway -o jsonpath='{.status}' -n {street-java-namespace}
+----
+
+You'll see something like this:
+
+[NOTE]
+====
+Pay attention to the message attribute:
+
+> pods ... is forbidden: maximum memory usage per Container is 100Mi, but limit is 128Mi, maximum memory usage per Pod is 100Mi, but limit is 134217728
+
+So this has to do with... limits!
+====
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+{"conditions":[{"lastTransitionTime":"2023-02-17T14:41:30Z","lastUpdateTime":"2023-02-17T14:41:30Z","message":"Created new replica set \"fruit-gateway-594749bdb8\"","reason":"NewReplicaSetCreated","status":"True","type":"Progressing"},{"lastTransitionTime":"2023-02-17T14:41:30Z","lastUpdateTime":"2023-02-17T14:41:30Z","message":"Deployment does not have minimum availability.","reason":"MinimumReplicasUnavailable","status":"False","type":"Available"},{"lastTransitionTime":"2023-02-17T14:41:30Z","lastUpdateTime":"2023-02-17T14:41:30Z","message":"pods \"fruit-gateway-594749bdb8-w4dsl\" is forbidden: [maximum memory usage per Container is 100Mi, but limit is 128Mi, maximum memory usage per Pod is 100Mi, but limit is 134217728]","reason":"FailedCreate","status":"True","type":"ReplicaFailure"}],"observedGeneration":1,"unavailableReplicas":1}
+----
+
+[#limits]
+== Limits
+
+As you have found the problems is that there are some limits stablished for our namespace... Limit-what, you say?
+
+> `LimitRanges` constrain the resource allocations (limits and requests) that you can specify for each applicable object kind (such as Pod or PersistentVolumeClaim) in a namespace. More info link:https://kubernetes.io/docs/concepts/policy/limit-range/[here]
+
+Run this command to learn about the limits, if any, defined in your namespace:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc get limitranges -n {street-java-namespace}
+----
+
+And you should get one `LimitRange`, called `guide-resource-limits`:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+NAME                    CREATED AT
+guide-resource-limits   2023-02-17T09:10:35Z
+----
+
+[#limitrange-anatomy]
+== LimitRange Anatomy
+
+This object defines the following limits:
+
+[source,yaml,attributes]
+----
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: guide-resource-limits
+spec:
+  limits:
+  - type: Container
+    default: <1>
+      cpu: 50m
+      memory: 50Mi
+    defaultRequest: <2>
+      cpu: 50m
+      memory: 50Mi
+    max: <3>
+      cpu: 100m
+      memory: 100Mi
+  - type: Pod <4>
+    max:
+      cpu: 100m
+      memory: 100Mi
+----
+<1> Default limit if no resource limit was defined
+<2> Default request if no resource request was defined
+<3> Max limits per container
+<4> This area defines limits per pod instead of per container
+
+[#getting-rid-of-the-limirange]
+== Getting Rid of the LimitRange
+
+We could modify the LimitRange, increase the limits or in real world scenarios, request an administrator to do it on our behalf. In this lab you have permissions to update or delete the object... let's make it easy... let's delete the object.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc delete limitranges/guide-resource-limits -n {street-java-namespace}
+----
+
+Now let's see if the deployments progress properly.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc get deploy -n {street-java-namespace}
+----
+
+If deployments are still not ready, try this command:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc rollout restart deployment fruit-gateway -n {street-java-namespace}
+oc rollout restart deployment fruit-service -n {street-java-namespace}
+oc rollout restart deployment fruit-service-db -n {street-java-namespace}
+----
+
+[#checking-the-app]
+== Checking the App
+
+Run this command:
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+curl https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/fruits
+----
+
+You should get a list of fruits like this:
+
+[source,json,attributes]
+----
+[{"id":1,"name":"Cherry"},{"id":51,"name":"Apple"},{"id":101,"name":"Banana"}]
+----
+
+Or use this link, you should see the UI of the app and all green.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{street-java-link}
+----
+
+Well now you should be happy, you're on fire, let's go.

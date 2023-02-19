@@ -1,0 +1,67 @@
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+  curl -k -X 'POST' \
+      "https://{gitea-host}/api/v1/repos/migrate" \
+      -H 'accept: application/json' \
+      -H  "Authorization: token ${GIT_PAT}" \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "clone_addr": "https://github.com/atarazana/gramola.git",
+      "description": "gramola configuration",
+      "issues": false,
+      "labels": false,
+      "lfs": false,
+      "milestones": false,
+      "private": false,
+      "pull_requests": false,
+      "releases": false,
+      "repo_name": "gramola",
+      "repo_owner": "{username}",
+      "service": "git",
+      "wiki": false
+    }'
+
+  curl -k -X 'POST' \
+      "https://{gitea-host}/api/v1/repos/migrate" \
+      -H 'accept: application/json' \
+      -H  "Authorization: token ${GIT_PAT}" \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "clone_addr": "https://github.com/atarazana/gramola-events.git",
+      "description": "gramola configuration",
+      "issues": false,
+      "labels": false,
+      "lfs": false,
+      "milestones": false,
+      "private": false,
+      "pull_requests": false,
+      "releases": false,
+      "repo_name": "gramola-events",
+      "repo_owner": "{username}",
+      "service": "git",
+      "wiki": false
+    }'
+
+  curl -k -X 'POST' \
+      "https://{gitea-host}/api/v1/repos/migrate" \
+      -H 'accept: application/json' \
+      -H  "Authorization: token ${GIT_PAT}" \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "clone_addr": "https://github.com/atarazana/gramola-gateway.git",
+      "description": "gramola configuration",
+      "issues": false,
+      "labels": false,
+      "lfs": false,
+      "milestones": false,
+      "private": false,
+      "pull_requests": false,
+      "releases": false,
+      "repo_name": "gramola-gateway",
+      "repo_owner": "{username}",
+      "service": "git",
+      "wiki": false
+    }'
+----

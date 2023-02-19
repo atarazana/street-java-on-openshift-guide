@@ -1,0 +1,452 @@
+= End To End Test
+include::_attributes.adoc[]
+
+[#introduction]
+== Introduction
+
+So far, *you have deployed your application and CICD pipelines*; additionally you *have created webhooks* and they are, apparently, working properly but we will never know for sure unless we make a change in the code and see if it all works as expected and we see that change being promoted through our environments. *It's about time for an end to end test!*
+
+The next diagram summarizes the end to end test you are going to run. As you can see, you will make a change to the code in the _Events API_ (*gramola-events*) which, via a webhook, will trigger the CI pipeline and hence the promotion of code. 
+
+image::end-to-end-pipeline-1.png[End to End Pipeline Test]
+
+These are the high level sequence of events (only relevant steps are mentioned, more details later on):
+
+1. Change the code and push those changes to the repository of code (*gramola-events* in this case).
+2. The *_Push Event_* is sent by the webhook to the *gramola-events CI Pipeline Event Listener* which in its turn triggers the pipeline by creating a *_PipelineRun_* object.
+3. The `build` step builds the image for *gramola-events* and pushes it to the registry, the hash of the new image is used to update the _kustomization.yaml_ file in the _dev overlay_, in a short-lived feature-branch in the configuration repository (*gramola*)
+4. A *_Pull Request_* is created for *merging* the `feature branch` with the `main branch` in the `pr-create` step.
+5. The PR has to be confirmed so that changes are effectively merged into the main branch (this is a manual step)
+6. Once the PR is confirmed, the merge is effective and a *_Pull Request Event_* is sent by the corresponding webhook to the *gramola-events CD Pipeline Event Listener* which in its turn triggers the pipeline by creating another *_PipelineRun_* object. At this point the hash of the new image has replaced the previous one.
+7. The _CD pipeline fetches configuration not code_ and _in parallel triggers the sync of_ *events-app-dev* which means the new hash of the image is replaced in the Deployment object and hence a rolling update is triggered. Once the app is in sync a new PR is created to promote the code to the next environment.
+
+Steps 6 and 7 are repeated for each environment until the code has been promoted to all of them.
+
+Ok, done with the introduction, let's get down to work!
+
+[#current-status]
+== Ⓐ Current Status
+
+Before kicking off the demo let's check the current status of *Gramola*. In order to do it, please open the next to link in both tabs so that you can watch the status of our app all the way through out the demo.
+
+Use this link to watch the status of *Gramola* in `dev`.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{gramola-gateway-dev-host}
+----
+
+And this link to watch the status of *Gramola* in `test`.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{gramola-gateway-test-host}
+----
+
+Both links should look like the next picture.
+
+[NOTE]
+====
+Remember:
+
+- The first green area shows the status of the `Gateway` and also the service name as stated in `src/main/resources/application.properties`
+- The second green area shows the status of the backend service `Events` and also the service name as stated in `src/main/resources/application.properties`
+- This interface refreshes itself every 2 seconds, so if you change the name of the service or there is a problem you should be able to see it here
+====
+
+image::gramola-gateway-ui-1.png[Gateway UI]
+
+[#change-the-code]
+== Ⓑ Change the code
+
+In order to make the demonstration easier the *gramola-events* API has and endpoint `/info/name` that returns the value of a property (`info.name`) in the `application.properties` file. Let's change the value of that property
+
+Copy the next URL to the gramola-events repository and paste it in a new tab.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{gitea-host}/{username}/gramola-events
+----
+
+You should land in the `gramola-events` repository main page. Sign in by using the *Sign in* link on the upper right corner (red rectangle). 
+
+image::demo-step-1-0.png[gramola-events repository]
+
+Credentials:
+
+- *Username*: {username}
+- *Password*: {password}
+
+image::demo-step-1-1.png[gramola-events sign in]
+
+Navigate to `src/main/resources/application.properties` then click on the pencil icon to edit the document directly.
+
+image::demo-step-1-2.png[Navigate to application.properties]
+
+Modify the value of property `info.name` add *{username}* as in the next picture so that you can later confirm the change has been promoted.
+
+image::demo-step-1-3.png[Modify property info.name]
+
+Commit changes, scroll down, add a commit message and click on the *Commit changes* button.
+
+image::demo-step-1-4.png[Commit changes]
+
+[#run-ci-pipeline]
+== Ⓒ Run the CI pipeline
+
+The *Push Event* generated by the webhook defined in *gramola-events* repo triggers the pipeline named *events-ci-pl*. Let's check that out.
+
+Copy the next url to the OpenShift console that should take you to the *Pipelines* area and open it in a new tab. Then have a look to the *events-ci-pl* pipeline which should have been triggered and hence running.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/dev-pipelines/ns/gramola-cicd-{username}
+----
+
+[NOTE]
+====
+Click on the *PLR* link to see the diagram of the on-going or finished pipeline run; or in the *Task Status Progress Bar* to see the *logs* of tasks and steps.
+====
+
+image::demo-step-2-1.png[CI Pipeline]
+
+Click on the *PLR* link (red rectangle on the left), eventually you'll see something like this. As you can see this is the representation of the pipeline including the status (in this case all green) of the tasks and also if any of them were skipped (grayed out).
+
+image::demo-step-2-2.png[CI Pipeline Run]
+
+Pay attention to the last task. As you can see it is actually two tasks in parallel but only one (`gitea-pr-create`) has been run, the other one (`github-pr-create`) has been skipped because in this case the git provider is Gitea.
+
+This is so because there is a _when expression_ in both tasks checking the GIT_PROVIDER parameter against *github* and *gitea* have a look to both tasks below.
+
+[tabs]
+====
+github-pr-create::
++
+--
+[source,yaml, subs="+macros,+attributes"]
+----
+  - name: github-pr-create
+      ...
+      runAfter:
+        - update-image
+      taskRef:
+        kind: ClusterTask
+        name: github-pr-create
+      when: <1>
+        - input: $(params.GIT_PROVIDER)
+          operator: in
+          values:
+            - github
+----
+<1> This task is run if *GIT_PROVIDER* is *github*{empty}footnote:[https://{gitea-host}/{username}/gramola/apps/cicd/templates/03-pipelines/events-ci-pl.yaml#L139]
+--
+gitea-pr-create::
++
+--
+[source,yaml, subs="+macros,+attributes"]
+----
+  - name: gitea-pr-create
+      ...
+      runAfter:
+        - update-image
+      taskRef:
+        kind: ClusterTask
+        name: gitea-pr-create
+      when: <1>
+        - input: $(params.GIT_PROVIDER)
+          operator: in
+          values:
+            - gitea
+----
+<1> This task is run if *GIT_PROVIDER* is *gitea*{empty}footnote:[https://{gitea-host}/{username}/gramola/apps/cicd/templates/03-pipelines/events-ci-pl.yaml#L170]
+--
+====
+
+So if the pipeline has finished well, the new image should have been pushed to the registry. Additionally the `kustomization.yaml` file of the `dev` overlay has been updated with the hash of the new image in a short-lived feature branch and finally a PR should have been created.
+
+Let's check all that out, let's start with the image. Copy the following link and open it in a browser.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{quay-server}/repository/{username}/gramola-events?tab=tags
+----
+
+You should see an image recently pushed as in the next picture.
+
+NOTE: If you click on the `download` icon and then choose `Docker Pull (by digest)` you can find the SHA256 has at the end of the command.
+
+image::demo-step-2-3.png[New Image]
+
+Now it's time to check it the PR has been created and includes the change of `kustomization.yaml` as expected.
+
+Please copy this link and open it.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{gitea-host}/{username}/gramola/pulls
+----
+
+You should see something like this, please click on the open PR.
+
+image::demo-step-2-4.png[Pull Requests]
+
+In the body of the PR there's information that helps the person who is to approve the PR that also will be used by the CD pipeline which should be triggered once the PR has been merged.
+
+image::demo-step-2-5.png[Open PR]
+
+Please go ahead and have a look to the `±Files changed` area. Once you're done click on the `Conversation` link.
+
+NOTE: You should see changes made to file `./events-deployment/overlays/dev/kustomization.yml`.
+
+image::demo-step-2-6.png[Files changed]
+
+Ok, both the image and the PR are where they're supposed to be, let's move on!
+
+[#running-cd-pipeline-dev]
+== Ⓓ Run the CD pipeline (`dev`)
+
+So the CI pipeline has prepared everything to start with the actual deployment of a new version of the Gramola Events service. If you weren't using GitOps the CD pipeline would (probably after an Approval Task) start by updating the image in the `Deployment` object using the Kubernetes API, but that's not the case here. The Approval Task you would use in a Jenkins pipeline has been replaced by a PR and changes to the `Deployment` object in the OpenShift cluster have been replaced by ArgoCD reconciling changes from the source of truth (git repository) to the OpenShift cluster.
+
+[#approving-pr-dev]
+=== Approve PR
+
+Well, it's time to continue where we left it, so go back to the PR and click on the `Create Merge Commit` then tick the `Delete Branch` check-box (we wont need that branch anymore) and click again on `Create Merge Commit`.
+
+image::demo-step-2-7.png[Create Merge Commit]
+
+[#cd-pipeline-triggered-dev]
+=== CD Pipeline Triggered
+
+The *Pull Request* event is sent out by the webhook to the *Events CD Pipeline `EventListener`* where some mapping and filtering will trigger the pipeline with a `PipelineRun` object populated with the necessary information.
+
+Please, open the next link or navigate to *Pipelines* in project `gramola-cicd-{username}` you will see the pipeline progressing.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/dev-pipelines/ns/gramola-cicd-{username}
+----
+
+NOTE: As you have done previously you can click on the *PLR* object to drill down and have a look to the logs.
+
+image::demo-step-2-8.png[CD Pipeline Running]
+
+Have a look at the pipeline details. As you can see there are several tasks, namely:
+
+- `argocd-sync` triggers the refresh and sync of descriptors coming from the corresponding overlay{empty}footnote:[https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/#bases-and-overlays], `dev` in this case
+- `fetch-config-repository` clones the `gramola` configuration repository
+- `update-image` creates a short-lived branch and updates the image hash in the `kustomization.yaml` file for the corresponding overlay
+- `github-pr-create` creates a PR for Github (not run)
+- `gitea-pr-create` creates a PR for Gitea
+
+image::demo-step-2-9.png[CD Pipeline Details]
+
+[#argocd-app-synced-dev]
+=== ArgoCD App Synced
+
+So the pipeline triggers the sync of `Events` using *ArgoCD*, let's have a look.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{argocd-server}/applications?proj=&sync=&health=&namespace=&cluster=&labels=app.kubernetes.io%252Finstance%253Dgramola-root-app-dev-{username}
+----
+
+NOTE: If you don't hurry you may miss the syncing process... if that is the case don't worry you have another chance later when the image is updated for the `test` environment.
+
+image::demo-step-2-10.png[CD Pipeline Details]
+
+[#checking-openshift-console-dev]
+=== Checking OpenShift Console
+
+You can also see the update of the `Events` deployment taking place from the OpenShift console, use the link below or navigate to project `gramola-dev-{username}` then to `Topology`
+
+You should see this... if you hurry!
+
+image::demo-step-2-11.png[CD Pipeline Details]
+
+[#checking-gramola-status-dev]
+=== Checking Gramola Status
+
+In any case, the most important test is running the application itself, in our case this means have a look to the status page of `Gateway`.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+http://{gramola-gateway-dev-host}
+----
+
+If you remember you changed the value of `info.name` in the `application.properties` file of `Events` so, if it all went well, you should see a different service name for the backend service `Events` as in the next picture.
+
+image::demo-step-2-12.png[CD Pipeline Details]
+
+Finally, you have seen the CD pipeline promoting the new version of the code as an image to the `dev` environment, but our pipeline ends with a task that generates a new PR, this one for the next environment `test`. Let's continue there.
+
+[#running-cd-pipeline-test]
+== Ⓔ Run the CD pipeline (`test`)
+
+This time we're going to do this a bit faster and with less talking. This chapter is essentially the same as the previous one, but if you have access to an additional cluster and you have run section xref:04-prepare-argocd.adoc#register-additional-clusters[Register Additional Clusters], then you will see how *Gramola* is also updated in the additional cluster.
+
+[#approving-pr-test]
+=== Approve PR
+
+Well, first of all let's see if there's a new PR created, please copy this link and open it.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{gitea-host}/{username}/gramola/pulls
+----
+
+Please click on the open PR.
+
+image::demo-step-3-1.png[Pull Requests]
+
+Have a look to the body of the PR, this time the overlay is `test`, other than the content is the same as before.
+
+image::demo-step-3-2.png[Open PR]
+
+Please go ahead and have a look to the `±Files changed` area. Once you're done click on the `Conversation` link.
+
+NOTE: You should see changes made to file `./events-deployment/overlays/test/kustomization.yml` and `./events-deployment/overlays/test-cloud/kustomization.yml`.
+
+image::demo-step-3-3.png[Files changed]
+
+Ok, both the image and the PR are where they're supposed to be, let's move on!
+
+Go back to the PR and click on the `Create Merge Commit` then tick the `Delete Branch` check-box (we wont need that branch anymore) and click again on `Create Merge Commit`.
+
+image::demo-step-3-4.png[Create Merge Commit]
+
+[#cd-pipeline-triggered-test]
+=== CD Pipeline Triggered
+
+The *Pull Request* event is sent out as before... so hurry to open the next link or navigate to *Pipelines* in project `gramola-cicd-{username}` you will see the pipeline progressing.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/dev-pipelines/ns/gramola-cicd-{username}
+----
+
+NOTE: As you have done previously you can click on the *PLR* object to drill down and have a look to the logs.
+
+image::demo-step-3-5.png[CD Pipeline Running]
+
+Have a look at the pipeline details.
+
+image::demo-step-3-6.png[CD Pipeline Details]
+
+[TIP]
+====
+As you can see, this time task `update-image` has been skipped (grayed), the reason is that in this setup we've decided to make the CD pipeline generic and extensible and in order to do that we defined a value in the helm chart we use to deploy the CICD pipelines that contains the names of the environments/overlays we support. You can have a look to the value `overlays` here:
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{gitea-host}/{username}/gramola/src/apps/cicd/values.yaml#L31
+----
+
+This means the CD pipeline should update the image of the next environment *only if there is a next environment*, right?
+
+If you go to the pipeline descriptor using the next command you will see that the `update-image` task will run only if `NEXT_OVERLAY` parameter value is in the list of `overlays`, basically if it is `dev` or `test` in this case.
+
+[source,yaml, subs="+attributes"]
+----
+- name: update-image
+  when:
+    - input: "$(params.NEXT_OVERLAY)"
+      operator: in
+      values: [{{ .Values.overlays }}]
+----
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{gitea-host}/{username}/gramola/src/apps/cicd/templates/03-pipelines/events-cd-pl.yaml#L64
+----
+
+One more tip, if you want to know why a task has been skipped, open the yaml of the pipeline run and look for `status->skippedTasks` find below an example:
+
+[source,yaml, subs="+attributes"]
+----
+ skippedTasks:
+    - name: update-image
+      whenExpressions:
+        - input: ''
+          operator: in
+          values:
+            - dev
+            - test
+----
+====
+
+[#argocd-app-synced-test]
+=== ArgoCD App Synced
+
+You already know that the pipeline triggers the sync of `Events` using *ArgoCD*, you can use the next link to see the status of the apps in the `test` namespaces.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{argocd-server}/applications?proj=gramola-project-test&sync=&health=&namespace=&cluster=&labels=
+----
+
+NOTE: Remember! You will see the `test-cloud` version only if you have setup an additional cluster
+
+image::demo-step-3-7.png[CD Pipeline Details]
+
+[#checking-openshift-console-test]
+=== Checking OpenShift Console
+
+You can also see the update of the `Events` deployment taking place from the OpenShift console in both the main and also in the additional clusters:
+
+[NOTE]
+====
+Use the link below or navigate to project `gramola-test-{username}` then to `Topology` to see `Events` being updated in the main cluster:
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+http://{openshift-console-host}/topology/ns/gramola-test-{username}?view=graph
+----
+
+Use the other link to see `Events` being updated in the additional cluster:
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+http://{additional-openshift-console-host}/topology/ns/gramola-test-{username}?view=graph
+----
+====
+
+image::demo-step-3-8.png[Gramola in test]
+
+[#checking-gramola-status-test]
+=== Checking Gramola Status
+
+Time to have a look to the status page of `Gateway` in the main cluster:
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+http://{gramola-gateway-test-host}
+----
+
+And in the additional cluster:
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+http://{additional-gramola-gateway-test-host}
+----
+
+If you remember you changed the value of `info.name` in the `application.properties` file of `Events` so, if it all went well, you should see a different service name for the backend service `Events` as in the next picture.
+
+image::demo-step-3-9.png[CD Pipeline Details]

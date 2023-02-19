@@ -1,0 +1,20 @@
+Once ArgoCD has been rolled out, this is something that should have been done by someone with enough permissions, you can run this simple test.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+curl -k -I https://{argocd-server}/
+----
+
+NOTE: You should get something like this. If you don't, be patient and run this command in 2 mins or so.
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+HTTP/1.1 200 OK
+set-cookie: i_like_gitea=82e42fd387b6ea7a; Path=/; HttpOnly; SameSite=Lax
+date: Mon, 25 Oct 2021 08:06:22 GMT
+set-cookie: 5b3fc896c2f6eedc568a6b59cd1862ea=23d42cb20150039ef52136e8993c6865; path=/; HttpOnly; Secure; SameSite=None
+cache-control: private
+----
+

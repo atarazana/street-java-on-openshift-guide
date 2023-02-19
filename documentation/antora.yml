@@ -1,0 +1,7 @@
+name: street-java-on-openshift-guide
+title: Street Java on OpenShift
+version: master
+nav:
+  - modules/ROOT/nav.adoc
+
+start_page: ROOT:index.adoc

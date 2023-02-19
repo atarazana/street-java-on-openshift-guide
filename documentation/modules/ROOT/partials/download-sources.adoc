@@ -1,0 +1,37 @@
+Before we start setting up the environment, let’s clone the tutorial sources and set the `TUTORIAL_HOME` environment variable to point to the root directory of the tutorial:
+
+[tabs]
+====
+laptop::
++
+--
+If you have fulfilled all the prerequisites then run this command, if that is not the case, please use the `web-terminal` tab.
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+git clone {tutorial-url} {folder}
+cd {folder}
+----
+--
+web-terminal::
++
+--
+If you want to use the OpenShift Webterminal to run this lab, please proceed to this link:
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-web-terminal}
+----
+
+You have to select which project you want to set the terminal at and if you haven't created a project before you will have to create one, if that's the case please use this one: *`{username}-terminal`*.
+
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+cd ~/scratch && git clone {tutorial-url} {folder}
+cd {folder}
+----
+--
+====
+

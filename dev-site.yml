@@ -1,0 +1,31 @@
+runtime:
+  cache_dir: ./.cache/antora
+
+site:
+  title: Street Java on OpenShift (Dev Mode)
+  url: http://localhost:3000/street-java-on-openshift-guide/index.html
+  start_page: street-java-on-openshift-guide::index.adoc
+
+content:
+  sources:
+    - url: .
+      branches: HEAD
+      start_path: documentation
+asciidoc:
+  attributes:
+    title: Street Java on OpenShift (Dev Mode)
+  extensions:
+    - ./lib/remote-include-processor.js
+    - ./lib/tab-block.js
+    - ./lib/dash.js
+    - ./lib/emot-inline-macro-processor.js
+ui:
+  bundle:
+    #url: https://github.com/redhat-developer-demos/rhd-tutorial-ui/releases/download/v0.1.8/ui-bundle.zip
+    #url: https://github.com/redhat-scholars/course-ui/releases/download/v0.1.12/ui-bundle.zip
+    url: https://github.com/atarazana/course-ui/releases/download/v0.1.12c/ui-bundle.zip
+    #url: /home/cvicensa/Projects/openshift/atarazana/course-ui/build/ui-bundle.zip
+    snapshot: true
+  supplemental_files: ./supplemental-ui
+output:
+  dir: ./gh-pages
