@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Prepare ArgoCD :: Street Java on OpenShift</title>
+    <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/04-prepare-argocd.html">
+    <meta name="generator" content="Antora 3.0.0">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://developers.redhat.com" target="_blank"><img
+          src="../_/img/header_logo.png" height="40px" alt="Red Hat Developer Program"></a>
+      <a class="navbar-item" href="https://atarazana.github.io/street-java-on-openshift-guide">Street Java on OpenShift</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Books</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">CheatSheets</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">CheatSheet A</a>
+            <a class="navbar-item" href="#">CheatSheet B</a>
+            <a class="navbar-item" href="#">CheatSheet C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Upcoming Events</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Event A</a>
+            <a class="navbar-item" href="#">Event B</a>
+            <a class="navbar-item" href="#">Event C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">More Tutorials</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Tutorial A</a>
+            <a class="navbar-item" href="#">Tutorial B</a>
+            <a class="navbar-item" href="#">Tutorial C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="street-java-on-openshift-guide" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html" class=" query-params-link">Street Java on OpenShift</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="01-setup.html">1. Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#prerequisite">Prerequisites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#openshift">Setup OpenShift 4</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#download-tutorial">Get tutorial sources</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="02-prepare-cluster.html">2. Prepare Cluster</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#deploying-core-components">Deploying core components</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#high-level-tests">High Level Tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#checking-quay">Checking Quay</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03-deploy-the-app.html">3. Deploy The App</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03-deploy-the-app.html#checking-helm-cli">Checking helm</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03-deploy-the-app.html#installing-street-java">Installing Street Java</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04-limit-what.html">4. Limit What?</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#checking-deployments">Checking Deployments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#limits">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#limitrange-anatomy">LimitRange Anatomy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#getting-rid-of-the-limirange">Getting Rid of the LimitRange</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#checking-the-app">Checking the App</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05-deploy-a-new-version.html">5. Deploy New Version</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#anatomy-of-your-chart">Anatomy of your Chart</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola">Deploying Gramola</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola-additional">Deploying Gramola++</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#argocd-ui-filtering">ArgoCD UI Filtering</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html">6. Deploy CICD Pipelines</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-root-account-in-quay">Create Quay Robot Acc.</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#deploying-cicd-pipelines">Deploying CICD Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-git-secret">Create Git Secret</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-registry-secret">Create Registry Secret</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#grant-pull-permissions">Granting Pull Permissions</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="07-checking-cicd-pipelines.html">7. Checking CICD Pipelines</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="07-checking-cicd-pipelines.html#overview">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="07-checking-cicd-pipelines.html#tekton-triggers">Tekton Triggers</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="08-create-pipeline-webhooks.html">8. Create Pipelines Webhooks</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#pipeline-webhooks">Pipelines Webhooks</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#create-ci-webhooks">Create CI Webhooks</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#create-cd-webhooks">Create CD Webhooks</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="09-test-cicd-pipelines.html">9. Check Pipeline Webhooks</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-events-ci-web-hook">Check Events CI Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-events-cd-web-hook">Check Events CD Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-gateway-ci-web-hook">Check Gateway CI Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-gateway-cd-web-hook">Check Gateway CD Web Hook</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="10-end-to-end-test.html">10. End to End Test</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#introduction">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#current-status">Ⓐ Current Status</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#change-the-code">Ⓑ Change the code</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#run-ci-pipeline">Ⓒ Run CI pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#running-cd-pipeline-dev">Ⓓ Run CD pipeline (<code>dev</code>)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#running-cd-pipeline-test">Ⓔ Run CD pipeline (<code>test</code>)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Street Java on OpenShift</span>
+    <span class="version">master</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">Street Java on OpenShift</span>
+      <ul class="versions">
+        <li class="version is-current">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Street Java on OpenShift</a></li>
+    <li><a href="04-prepare-argocd.html">Prepare ArgoCD</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/04-prepare-argocd.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Prepare ArgoCD</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>ArgoCD</strong> is the <strong>GitOps</strong> engine <strong>Red Hat OpenShift GitOps</strong> rely on. It should have been installed previously in <a href="02-prepare-cluster.html#deploying-core-components" class="xref page">Deploying core components</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="checking-argocd"><a class="anchor" href="#checking-argocd"></a>Checking ArgoCD</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once ArgoCD has been rolled out, this is something that should have been done by someone with enough permissions, you can run this simple test.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -k -I <a href="https://openshift-gitops-server-openshift-gitops.apps.%BASE_SUBDOMAIN%/" class="bare">https://openshift-gitops-server-openshift-gitops.apps.%BASE_SUBDOMAIN%/</a></code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You should get something like this. If you don&#8217;t, be patient and run this command in 2 mins or so.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">HTTP/1.1 200 OK
+set-cookie: i_like_gitea=82e42fd387b6ea7a; Path=/; HttpOnly; SameSite=Lax
+date: Mon, 25 Oct 2021 08:06:22 GMT
+set-cookie: 5b3fc896c2f6eedc568a6b59cd1862ea=23d42cb20150039ef52136e8993c6865; path=/; HttpOnly; Secure; SameSite=None
+cache-control: private</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="log-in-argocd"><a class="anchor" href="#log-in-argocd"></a>Log in ArgoCD with CLI</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Well <strong>ArgoCD</strong> is healthy, now let&#8217;s see if the <strong>CLI</strong> works properly by trying to log in with it (you should have it installed as stated in <a href="01-setup.html#prerequisite" class="xref page">Prerequisites</a> section).</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>As you can see below there are to possibilities of logging in <strong>ArgoCD</strong>, one from a laptop or PC and the other from the OpenShift web terminal. If you run the former then you&#8217;ll be redirected to OpenShift Web Console to enter your credentials:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>USERNAME: %USERNAME%</p>
+</li>
+<li>
+<p>PASSWORD: %PASSWORD%</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If you choose the latter then you won&#8217;t need to use your credentials, you will use the <code>admin</code> user. In order to run the lab it doesn&#8217;t matter which one you choose, in a real scenario though you would probably have to use the former option.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tabset is-loading">
+<div class="ulist tabs">
+<ul>
+<li>
+<p><a id="tabset1_laptop"></a>laptop</p>
+</li>
+<li>
+<p><a id="tabset1_web-terminal"></a>web-terminal</p>
+</li>
+</ul>
+</div>
+<div class="content">
+<div class="tab-pane" aria-labelledby="tabset1_laptop">
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">argocd login openshift-gitops-server-openshift-gitops.apps.%BASE_SUBDOMAIN% --insecure --sso --grpc-web</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You may see this message, if that is the case click on <code>Allow selected permissions</code> and continue.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/argocd-login-permissions.png" alt="ArgoCD Login Permissions">
+</div>
+</div>
+<div class="paragraph">
+<p>After being successfully logged in, you should be redirected to localhost:8085 with a message of successful authentication and in the terminal output you should see something similar to this.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">Opening browser for authentication
+Performing authorization_code flow login: <a href="https://openshift-gitops-server-openshift-gitops.apps.%BASE_SUBDOMAIN%/api/dex/auth?access_type=offline&amp;client_id=argo-cd-cli&amp;code_challenge=VVX5Feb1ySsRQAUNfvSrolTt8yak2HKjUZ-YjuQgItI&amp;code_challenge_method=S256&amp;redirect_uri=http%3A%2F%2Flocalhost%3A8085%2Fauth%2Fcallback&amp;response_type=code&amp;scope=openid+profile+email+groups+offline_access&amp;state=zsQHLaywsv" class="bare">https://openshift-gitops-server-openshift-gitops.apps.%BASE_SUBDOMAIN%/api/dex/auth?access_type=offline&amp;client_id=argo-cd-cli&amp;code_challenge=VVX5Feb1ySsRQAUNfvSrolTt8yak2HKjUZ-YjuQgItI&amp;code_challenge_method=S256&amp;redirect_uri=http%3A%2F%2Flocalhost%3A8085%2Fauth%2Fcallback&amp;response_type=code&amp;scope=openid+profile+email+groups+offline_access&amp;state=zsQHLaywsv</a>
+Authentication successful
+'%USERNAME%' logged in successfully
+Context 'openshift-gitops-server-openshift-gitops.apps.%BASE_SUBDOMAIN%' updated</code></pre>
+</div>
+</div>
+</div>
+<div class="tab-pane" aria-labelledby="tabset1_web-terminal">
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export ARGOCD_HOST=$(oc get route/openshift-gitops-server -o jsonpath='{.status.ingress[0].host}' -n openshift-gitops)
+
+export ARGOCD_USERNAME=admin
+export ARGOCD_PASSWORD=$(oc get secret openshift-gitops-cluster -o jsonpath='{.data.admin\.password}' -n openshift-gitops | base64 -d)
+
+argocd login $ARGOCD_HOST --insecure --grpc-web --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="register-repositories"><a class="anchor" href="#register-repositories"></a>Register Repositories</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this guide we cover the case of a protected git repository that needs to be interacted with from a system and you don&#8217;t want your personal password to be exposed that’s why you have created a <strong>Personal Access Token</strong>.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">argocd --insecure repo add <a href="https://{gitea-host}/%USERNAME%/gramola.git" class="bare">https://{gitea-host}/%USERNAME%/gramola.git</a> --username %USERNAME% --password ${GIT_PAT} --upsert --insecure-skip-server-verification --grpc-web</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run this command to list the registered repositories.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">argocd --insecure repo list --grpc-web</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is a typical response.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">TYPE  NAME  REPO                                                                                                           INSECURE  OCI    LFS    CREDS  STATUS      MESSAGE
+git         <a href="https://{gitea-host}/user1/gramola.git" class="bare">https://{gitea-host}/user1/gramola.git</a>          false     false  false  true   Successful</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="register-additional-clusters"><a class="anchor" href="#register-additional-clusters"></a>Register Additional Clusters<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>First make sure there is a context with proper credentials, in order to achieve this please log in the additional cluster.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<strong>ADDITIONAL_API_SERVER_TOKEN</strong> is a token of a user with cluster-admin permissions on the additional cluster, <strong>ADDITIONAL_API_SERVER_MANAGED</strong> is the host and port <strong>without http(s)</strong> of the additional cluster.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export ADDITIONAL_API_SERVER_TOKEN=%ADDITIONAL_API_SERVER_TOKEN%
+export ADDITIONAL_API_SERVER_MANAGED=api.%ADDITIONAL_BASE_SUBDOMAIN%:6443
+oc login --token=${ADDITIONAL_API_SERVER_TOKEN} --server=https://${ADDITIONAL_API_SERVER_MANAGED}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Give a name to the additional cluster and add it with the next command.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<strong>CLUSTER_NAME</strong> is a name you choose for your cluster.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export CLUSTER_NAME={additional-cluster-name}
+CONTEXT_NAME=$(oc config get-contexts -o name | grep ${ADDITIONAL_API_SERVER_MANAGED})
+argocd --insecure cluster add ${CONTEXT_NAME} --name ${CLUSTER_NAME} --grpc-web</code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+You will see the following message warning you that if you proceed you will create a <code>ServiceAccount</code> called <code>argocd-manager</code> with full cluter lever admin privileges. Don&#8217;t worry and  please type <code>y</code> and press <kbd>Enter</kbd>.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">WARNING: This will create a service account `argocd-manager` on the cluster referenced by context `default/api-cluster-...opentlc-com:6443/opentlc-mgr` with full cluster level admin privileges. Do you want to continue [y/N]? y</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Check if your cluster has been added correctly.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">argocd --insecure cluster list --grpc-web</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is the expected output:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">SERVER                                   NAME          VERSION  STATUS      MESSAGE                                              PROJECT
+<a href="https://api.cluster-...opentlc.com:6443" class="bare">https://api.cluster-...opentlc.com:6443</a>  aws-managed1           Unknown     Cluster has no application and not being monitored.
+<a href="https://kubernetes.default.svc" class="bare">https://kubernetes.default.svc</a>           in-cluster    1.23     Successful</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, it&#8217;s time to log back in the main cluster.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc login -u %USERNAME% -p %PASSWORD% --server=https://api.%BASE_SUBDOMAIN%:6443</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="project-definitions"><a class="anchor" href="#project-definitions"></a>Project definitions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In ArgoCD you can constrain which repositories and destinations can be linked with the definition of an application, in our case we are not constraining but we still have created project definitions to be prepared for future needs.</p>
+</div>
+<div class="paragraph">
+<p>Run this command to see the list of project definitions.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">argocd --insecure proj list --grpc-web</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is the expected result, one project definition for development and another one for testing.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">NAME                  DESCRIPTION           DESTINATIONS  SOURCES  CLUSTER-RESOURCE-WHITELIST  NAMESPACE-RESOURCE-BLACKLIST  SIGNATURE-KEYS  ORPHANED-RESOURCES
+default                                     *,*           *        */*                         &lt;none&gt;                        &lt;none&gt;          disabled
+gramola-project-dev   Gramola Project Dev   *,*           *        */*                         &lt;none&gt;                        &lt;none&gt;          disabled
+gramola-project-test  Gramola Project Test  *,*           *        */*                         &lt;none&gt;                        &lt;none&gt;          disabled</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnotedef_1">
+<a href="#_footnoteref_1">1</a>. This an optional chapter, run it only if you have an additional cluster
+</div>
+</div>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <a class="rhd-logo" href="https://developers.redhat.com" target="_blank"></div>
+</footer>
+<script src="../_/js/vendor/clipboard.js"></script>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

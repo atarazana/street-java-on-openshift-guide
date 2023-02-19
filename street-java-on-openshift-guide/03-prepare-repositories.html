@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Prepare Repositories :: Street Java on OpenShift</title>
+    <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/03-prepare-repositories.html">
+    <meta name="generator" content="Antora 3.0.0">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://developers.redhat.com" target="_blank"><img
+          src="../_/img/header_logo.png" height="40px" alt="Red Hat Developer Program"></a>
+      <a class="navbar-item" href="https://atarazana.github.io/street-java-on-openshift-guide">Street Java on OpenShift</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Books</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">CheatSheets</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">CheatSheet A</a>
+            <a class="navbar-item" href="#">CheatSheet B</a>
+            <a class="navbar-item" href="#">CheatSheet C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Upcoming Events</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Event A</a>
+            <a class="navbar-item" href="#">Event B</a>
+            <a class="navbar-item" href="#">Event C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">More Tutorials</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Tutorial A</a>
+            <a class="navbar-item" href="#">Tutorial B</a>
+            <a class="navbar-item" href="#">Tutorial C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="street-java-on-openshift-guide" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html" class=" query-params-link">Street Java on OpenShift</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="01-setup.html">1. Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#prerequisite">Prerequisites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#openshift">Setup OpenShift 4</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#download-tutorial">Get tutorial sources</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="02-prepare-cluster.html">2. Prepare Cluster</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#deploying-core-components">Deploying core components</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#high-level-tests">High Level Tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#checking-quay">Checking Quay</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03-deploy-the-app.html">3. Deploy The App</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03-deploy-the-app.html#checking-helm-cli">Checking helm</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03-deploy-the-app.html#installing-street-java">Installing Street Java</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04-limit-what.html">4. Limit What?</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#checking-deployments">Checking Deployments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#limits">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#limitrange-anatomy">LimitRange Anatomy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#getting-rid-of-the-limirange">Getting Rid of the LimitRange</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#checking-the-app">Checking the App</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05-deploy-a-new-version.html">5. Deploy New Version</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#anatomy-of-your-chart">Anatomy of your Chart</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola">Deploying Gramola</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola-additional">Deploying Gramola++</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#argocd-ui-filtering">ArgoCD UI Filtering</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html">6. Deploy CICD Pipelines</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-root-account-in-quay">Create Quay Robot Acc.</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#deploying-cicd-pipelines">Deploying CICD Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-git-secret">Create Git Secret</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-registry-secret">Create Registry Secret</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#grant-pull-permissions">Granting Pull Permissions</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="07-checking-cicd-pipelines.html">7. Checking CICD Pipelines</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="07-checking-cicd-pipelines.html#overview">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="07-checking-cicd-pipelines.html#tekton-triggers">Tekton Triggers</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="08-create-pipeline-webhooks.html">8. Create Pipelines Webhooks</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#pipeline-webhooks">Pipelines Webhooks</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#create-ci-webhooks">Create CI Webhooks</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#create-cd-webhooks">Create CD Webhooks</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="09-test-cicd-pipelines.html">9. Check Pipeline Webhooks</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-events-ci-web-hook">Check Events CI Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-events-cd-web-hook">Check Events CD Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-gateway-ci-web-hook">Check Gateway CI Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-gateway-cd-web-hook">Check Gateway CD Web Hook</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="10-end-to-end-test.html">10. End to End Test</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#introduction">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#current-status">Ⓐ Current Status</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#change-the-code">Ⓑ Change the code</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#run-ci-pipeline">Ⓒ Run CI pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#running-cd-pipeline-dev">Ⓓ Run CD pipeline (<code>dev</code>)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#running-cd-pipeline-test">Ⓔ Run CD pipeline (<code>test</code>)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Street Java on OpenShift</span>
+    <span class="version">master</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">Street Java on OpenShift</span>
+      <ul class="versions">
+        <li class="version is-current">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Street Java on OpenShift</a></li>
+    <li><a href="03-prepare-repositories.html">Prepare Repositories</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/03-prepare-repositories.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Prepare Repositories</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Everything we do in this section requires that you have fulfilled the <a href="01-setup.html#prerequisite" class="xref page">prerequisites</a> section and you&#8217;re logged in your OpenShift cluster.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>EVEN</strong> if you have two clusters and want to run the multicluster section&#8230;&#8203; <strong>log in the main one now</strong> <span class="underline">not in the secondary</span>.</p>
+</li>
+<li>
+<p><strong>AND</strong> log in <strong>as normal user</strong>, not <span class="underline">not as a cluster admin</span>.</p>
+</li>
+</ol>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>So if not already logged in, please do it now.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc login -u %USERNAME% -p %PASSWORD% --server=https://api.%BASE_SUBDOMAIN%:6443</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="source-of-truth"><a class="anchor" href="#source-of-truth"></a>Source Of Truth</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As we have already exposed in GitOps Git is the source of truth so we need one to start with&#8230;&#8203; you may have your own but for the sake of homogeneity in this guide we&#8217;re going to use a git server deployed in OpenShift.</p>
+</div>
+<div class="paragraph">
+<p>Why not relying on a preexisting git server somewhere you may ask? This is so, because in order to execute the pipelines section of this guide you have to fork some git repositories.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This is necessary because:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>webhooks need to be created and obviously you need permissions on them</p>
+</li>
+<li>
+<p>you want to make changes to the code and promote those changes across environments</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>These are the repositories you need to fork:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Configuration Repo:</strong> <a href="https://github.com/atarazana/gramola.git" class="bare">https://github.com/atarazana/gramola.git</a></p>
+</li>
+<li>
+<p><strong>Events Microservice:</strong> <a href="https://github.com/atarazana/gramola-events.git" class="bare">https://github.com/atarazana/gramola-events.git</a></p>
+</li>
+<li>
+<p><strong>Gateway Microservice:</strong> <a href="https://github.com/atarazana/gramola-gateway.git" class="bare">https://github.com/atarazana/gramola-gateway.git</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You could fork them in your preferred git server, but for the sake of simplicity your&#8217;re going to use a git server (<a href="https://gitea.io" target="_blank" rel="noopener">Gitea</a>) which should&#8217;ve been deployed in section <a href="02-prepare-cluster.html#deploying-gitea" class="xref page">Deploying Gitea</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="explore-gitea-console"><a class="anchor" href="#explore-gitea-console"></a>Explore Gitea Console</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we continue with the migration of the git repositories of our application open the console and check that your credentials are valid and all looks good.</p>
+</div>
+<div class="paragraph">
+<p>Copy the next url and open it in a new tab, please use these credentials:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>USERNAME:</strong> %USERNAME%</p>
+</li>
+<li>
+<p><strong>PASSWORD:</strong> %PASSWORD%</p>
+</li>
+</ul>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://repository-gitea-system.apps.%BASE_SUBDOMAIN%/user/login</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see something like this. Please enter your credentials and hit the green button.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/gitea-login.png" alt="Gitea Login">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="create-git-pat"><a class="anchor" href="#create-git-pat"></a>Create Git PAT</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s create a <strong>Personal Access Token</strong> (PAT) in Gitea for user <strong>%USERNAME%</strong>.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+You&#8217;ll need this token later so don&#8217;t forget to copy it somewhere just in case you close the terminal window.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">GIT_PAT=$(curl -k -s -XPOST -H "Content-Type: application/json" \
+  -d '{"name":"cicd'"${RANDOM}"'"}' \
+  -u %USERNAME%:%PASSWORD% \
+  <a href="https://{gitea-host}/api/v1/users/%USERNAME%/tokens" class="bare">https://{gitea-host}/api/v1/users/%USERNAME%/tokens</a> | jq -r .sha1)
+echo "GIT_PAT=${GIT_PAT}"</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="migrate-repositories"><a class="anchor" href="#migrate-repositories"></a>Migrate Repositories</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that user <strong>%USERNAME%</strong> has been created let&#8217;s migrate <code>gramola</code> repositories into Gitea.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">  curl -k -X 'POST' \
+      "https://{gitea-host}/api/v1/repos/migrate" \
+      -H 'accept: application/json' \
+      -H  "Authorization: token ${GIT_PAT}" \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "clone_addr": "https://github.com/atarazana/gramola.git",
+      "description": "gramola configuration",
+      "issues": false,
+      "labels": false,
+      "lfs": false,
+      "milestones": false,
+      "private": false,
+      "pull_requests": false,
+      "releases": false,
+      "repo_name": "gramola",
+      "repo_owner": "%USERNAME%",
+      "service": "git",
+      "wiki": false
+    }'
+
+  curl -k -X 'POST' \
+      "https://{gitea-host}/api/v1/repos/migrate" \
+      -H 'accept: application/json' \
+      -H  "Authorization: token ${GIT_PAT}" \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "clone_addr": "https://github.com/atarazana/gramola-events.git",
+      "description": "gramola configuration",
+      "issues": false,
+      "labels": false,
+      "lfs": false,
+      "milestones": false,
+      "private": false,
+      "pull_requests": false,
+      "releases": false,
+      "repo_name": "gramola-events",
+      "repo_owner": "%USERNAME%",
+      "service": "git",
+      "wiki": false
+    }'
+
+  curl -k -X 'POST' \
+      "https://{gitea-host}/api/v1/repos/migrate" \
+      -H 'accept: application/json' \
+      -H  "Authorization: token ${GIT_PAT}" \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "clone_addr": "https://github.com/atarazana/gramola-gateway.git",
+      "description": "gramola configuration",
+      "issues": false,
+      "labels": false,
+      "lfs": false,
+      "milestones": false,
+      "private": false,
+      "pull_requests": false,
+      "releases": false,
+      "repo_name": "gramola-gateway",
+      "repo_owner": "%USERNAME%",
+      "service": "git",
+      "wiki": false
+    }'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After successfully migrating all the repos you should see this in the Gitea console.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Don&#8217;t forget to refresh your browser.
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/gitea-migrated-repos.png" alt="Gitea Migrated Repos">
+</div>
+</div>
+</div>
+</div>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <a class="rhd-logo" href="https://developers.redhat.com" target="_blank"></div>
+</footer>
+<script src="../_/js/vendor/clipboard.js"></script>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

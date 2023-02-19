@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Checking Pipelines Webhooks :: Street Java on OpenShift</title>
+    <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/09-test-cicd-pipelines.html">
+    <link rel="prev" href="08-create-pipeline-webhooks.html">
+    <link rel="next" href="10-end-to-end-test.html">
+    <meta name="generator" content="Antora 3.0.0">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://developers.redhat.com" target="_blank"><img
+          src="../_/img/header_logo.png" height="40px" alt="Red Hat Developer Program"></a>
+      <a class="navbar-item" href="https://atarazana.github.io/street-java-on-openshift-guide">Street Java on OpenShift</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Books</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">CheatSheets</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">CheatSheet A</a>
+            <a class="navbar-item" href="#">CheatSheet B</a>
+            <a class="navbar-item" href="#">CheatSheet C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Upcoming Events</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Event A</a>
+            <a class="navbar-item" href="#">Event B</a>
+            <a class="navbar-item" href="#">Event C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">More Tutorials</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Tutorial A</a>
+            <a class="navbar-item" href="#">Tutorial B</a>
+            <a class="navbar-item" href="#">Tutorial C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="street-java-on-openshift-guide" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html" class=" query-params-link">Street Java on OpenShift</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="01-setup.html">1. Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#prerequisite">Prerequisites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#openshift">Setup OpenShift 4</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#download-tutorial">Get tutorial sources</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="02-prepare-cluster.html">2. Prepare Cluster</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#deploying-core-components">Deploying core components</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#high-level-tests">High Level Tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#checking-quay">Checking Quay</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03-deploy-the-app.html">3. Deploy The App</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03-deploy-the-app.html#checking-helm-cli">Checking helm</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03-deploy-the-app.html#installing-street-java">Installing Street Java</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04-limit-what.html">4. Limit What?</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#checking-deployments">Checking Deployments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#limits">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#limitrange-anatomy">LimitRange Anatomy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#getting-rid-of-the-limirange">Getting Rid of the LimitRange</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#checking-the-app">Checking the App</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05-deploy-a-new-version.html">5. Deploy New Version</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#anatomy-of-your-chart">Anatomy of your Chart</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola">Deploying Gramola</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola-additional">Deploying Gramola++</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#argocd-ui-filtering">ArgoCD UI Filtering</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html">6. Deploy CICD Pipelines</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-root-account-in-quay">Create Quay Robot Acc.</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#deploying-cicd-pipelines">Deploying CICD Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-git-secret">Create Git Secret</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-registry-secret">Create Registry Secret</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#grant-pull-permissions">Granting Pull Permissions</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="07-checking-cicd-pipelines.html">7. Checking CICD Pipelines</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="07-checking-cicd-pipelines.html#overview">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="07-checking-cicd-pipelines.html#tekton-triggers">Tekton Triggers</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="08-create-pipeline-webhooks.html">8. Create Pipelines Webhooks</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#pipeline-webhooks">Pipelines Webhooks</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#create-ci-webhooks">Create CI Webhooks</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#create-cd-webhooks">Create CD Webhooks</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="09-test-cicd-pipelines.html">9. Check Pipeline Webhooks</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#check-events-ci-web-hook">Check Events CI Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#check-events-cd-web-hook">Check Events CD Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#check-gateway-ci-web-hook">Check Gateway CI Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#check-gateway-cd-web-hook">Check Gateway CD Web Hook</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="10-end-to-end-test.html">10. End to End Test</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#introduction">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#current-status">Ⓐ Current Status</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#change-the-code">Ⓑ Change the code</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#run-ci-pipeline">Ⓒ Run CI pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#running-cd-pipeline-dev">Ⓓ Run CD pipeline (<code>dev</code>)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#running-cd-pipeline-test">Ⓔ Run CD pipeline (<code>test</code>)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Street Java on OpenShift</span>
+    <span class="version">master</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">Street Java on OpenShift</span>
+      <ul class="versions">
+        <li class="version is-current">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Street Java on OpenShift</a></li>
+    <li><a href="09-test-cicd-pipelines.html">9. Check Pipeline Webhooks</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/09-test-cicd-pipelines.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Checking Pipelines Webhooks</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Webhooks are in place, it&#8217;s time to check if they are working correctly. Red Hat OpenShift Pipelines Operator generates <code>Deployments</code> and <code>Routes</code> objects starting from the definition of <code>EventListeners</code>. The tests you&#8217;re going to run here are simply testing that those deployments are running properly, the same technique can be used to debug <code>TriggerBinding</code> and <code>TriggerTemplate</code> attribute mapping and <code>EventListener</code> cel<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> filters.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="check-events-ci-web-hook"><a class="anchor" href="#check-events-ci-web-hook"></a>Check Events CI Web Hook</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let’s check if the webhook is working, please open a new terminal and execute the following command.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export USERNAME="%USERNAME%"
+export CICD_NAMESPACE="gramola-cicd-${USERNAME}"
+oc logs -f deployment/el-events-ci-pl-push-{git-provider}-listener -n ${CICD_NAMESPACE}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should get something like this, leave the terminal open and please go back to the other terminal window.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">...
+{"level":"info","ts":"2022-02-14T17:33:55.087Z","logger":"eventlistener","caller":"eventlistenersink/main.go:181","msg":"Listen and serve on port 8080","commit":"fbb0fd1","knative.dev/controller":"eventlistener"}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now if you push a change in the code the CI pipeline for <code>events</code> should we kicked off but for now let&#8217;s check that the listener is working properly by running a test delivery against the listener URL itself. Run the following command:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The <code>EventListener</code> expects a <code>push</code> event, hence because we&#8217;re sending a <code>dummy</code> payload and event of type <code>dummy</code> we should expect and error but the test will be successful because we&#8217;re testing the frontend of the <code>EventListener</code> here.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -X POST -k  http://$(oc get route/el-events-ci-pl-push-{git-provider}-listener  -n $CICD_NAMESPACE -o jsonpath='{.spec.host}') \
+ -H 'X-GitHub-Event: dummy' -H 'X-GitHub-Event-Type: dummy' -H 'X-Gitea-Event: dummy' -H 'X-Gitea-Event-Type: dummy' \
+ -H 'Content-Type: application/json' \
+ --data '{ "dummy": "dummy"}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is the expected output in the terminal where the <code>oc log</code> command is running.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">...
+{"level":"info","ts":"2022-09-12T16:30:11.860Z","logger":"eventlistener","caller":"sink/sink.go:234","msg":"interceptor stopped trigger processing: rpc error: code = FailedPrecondition desc = event type dummy is not allowed","commit":"fbb0fd1","knative.dev/controller":"eventlistener","eventlistener":"events-ci-pl-push-gitea-listener","namespace":"gramola-cicd-user1","eventlistenerUID":"2a940da6-e625-4f18-98b2-3bf44f48668a","/triggers-eventid":"507dd6b4-8715-4c6a-a89e-b703a800c230","/trigger":"github-listener"}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Stop the log output with <span class="keyseq"><kbd>Ctrl</kbd>+<kbd>C</kbd></span>.</p>
+</div>
+<div class="paragraph">
+<p>Now you can do the same for the other webhooks, this time with a lot less wording.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="check-events-cd-web-hook"><a class="anchor" href="#check-events-cd-web-hook"></a>Check Events CD Web Hook</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Please open a new terminal, or reuse the one where you run the previous tests, and execute the following command.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export USERNAME="%USERNAME%"
+export CICD_NAMESPACE="gramola-cicd-${USERNAME}"
+oc logs -f deployment/el-events-cd-pl-pr-{git-provider}-listener -n ${CICD_NAMESPACE}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should get something like this, leave the terminal open and please go back to the other terminal window.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">...
+{"level":"info","ts":"2022-09-12T10:04:59.451Z","logger":"eventlistener","caller":"eventlistenersink/main.go:181","msg":"Listen and serve on port 8080","commit":"fbb0fd1","knative.dev/controller":"eventlistener"}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run the following command that sends a test <code>dummy</code> payload and event to the listener.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -X POST -k  http://$(oc get route/el-events-cd-pl-pr-{git-provider}-listener  -n $CICD_NAMESPACE -o jsonpath='{.spec.host}') \
+ -H 'X-GitHub-Event: dummy' -H 'X-GitHub-Event-Type: dummy' -H 'X-Gitea-Event: dummy' -H 'X-Gitea-Event-Type: dummy' \
+ -H 'Content-Type: application/json' \
+ --data '{ "dummy": "dummy"}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Again this is the expected output in the terminal where the <code>oc log</code> command is running.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">...
+{"level":"info","ts":"2022-09-12T16:43:27.906Z","logger":"eventlistener","caller":"sink/sink.go:234","msg":"interceptor stopped trigger processing: rpc error: code = FailedPrecondition desc = event type dummy is not allowed","commit":"fbb0fd1","knative.dev/controller":"eventlistener","eventlistener":"events-cd-pl-pr-gitea-listener","namespace":"gramola-cicd-user1","eventlistenerUID":"e16440c0-e329-4ba9-bdbc-5af516b56a2a","/triggers-eventid":"29307d50-f977-4ead-bad6-7007bb5b4d64","/trigger":"github-listener"}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Stop the log output with <span class="keyseq"><kbd>Ctrl</kbd>+<kbd>C</kbd></span>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="check-gateway-ci-web-hook"><a class="anchor" href="#check-gateway-ci-web-hook"></a>Check Gateway CI Web Hook</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Please open a new terminal, or reuse the one where you run the previous tests, and execute the following command.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export USERNAME="%USERNAME%"
+export CICD_NAMESPACE="gramola-cicd-${USERNAME}"
+oc logs -f deployment/el-gateway-ci-pl-push-{git-provider}-listener -n ${CICD_NAMESPACE}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should get something like this, leave the terminal open and please go back to the other terminal window.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">...
+{"level":"info","ts":"2022-09-12T10:04:59.586Z","logger":"eventlistener","caller":"eventlistenersink/main.go:181","msg":"Listen and serve on port 8080","commit":"fbb0fd1","knative.dev/controller":"eventlistener"}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run the following command that sends a test <code>dummy</code> payload and event to the listener.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -X POST -k  http://$(oc get route/el-gateway-ci-pl-push-{git-provider}-listener  -n $CICD_NAMESPACE -o jsonpath='{.spec.host}') \
+ -H 'X-GitHub-Event: dummy' -H 'X-GitHub-Event-Type: dummy' -H 'X-Gitea-Event: dummy' -H 'X-Gitea-Event-Type: dummy' \
+ -H 'Content-Type: application/json' \
+ --data '{ "dummy": "dummy"}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Again this is the expected output in the terminal where the <code>oc log</code> command is running.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">...
+{"level":"info","ts":"2022-09-12T16:47:55.330Z","logger":"eventlistener","caller":"sink/sink.go:234","msg":"interceptor stopped trigger processing: rpc error: code = FailedPrecondition desc = event type dummy is not allowed","commit":"fbb0fd1","knative.dev/controller":"eventlistener","eventlistener":"gateway-ci-pl-push-gitea-listener","namespace":"gramola-cicd-user1","eventlistenerUID":"f04cb7d2-4fe6-4447-a253-b434a9f8efd0","/triggers-eventid":"4e7af3eb-e15f-432d-8802-2506b3d741e6","/trigger":"github-listener"}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Stop the log output with <span class="keyseq"><kbd>Ctrl</kbd>+<kbd>C</kbd></span>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="check-gateway-cd-web-hook"><a class="anchor" href="#check-gateway-cd-web-hook"></a>Check Gateway CD Web Hook</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Please open a new terminal, or reuse the one where you run the previous tests, and execute the following command.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export USERNAME="%USERNAME%"
+export CICD_NAMESPACE="gramola-cicd-${USERNAME}"
+oc logs -f deployment/el-gateway-cd-pl-pr-{git-provider}-listener -n ${CICD_NAMESPACE}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should get something like this, leave the terminal open and please go back to the other terminal window.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">...
+{"level":"info","ts":"2022-09-12T10:04:59.991Z","logger":"eventlistener","caller":"eventlistenersink/main.go:181","msg":"Listen and serve on port 8080","commit":"fbb0fd1","knative.dev/controller":"eventlistener"}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run the following command that sends a test <code>dummy</code> payload and event to the listener.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -X POST -k  http://$(oc get route/el-gateway-cd-pl-pr-{git-provider}-listener  -n $CICD_NAMESPACE -o jsonpath='{.spec.host}') \
+ -H 'X-GitHub-Event: dummy' -H 'X-GitHub-Event-Type: dummy' -H 'X-Gitea-Event: dummy' -H 'X-Gitea-Event-Type: dummy' \
+ -H 'Content-Type: application/json' \
+ --data '{ "dummy": "dummy"}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Again this is the expected output in the terminal where the <code>oc log</code> command is running.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">...
+{"level":"info","ts":"2022-09-12T16:50:54.425Z","logger":"eventlistener","caller":"sink/sink.go:234","msg":"interceptor stopped trigger processing: rpc error: code = FailedPrecondition desc = event type dummy is not allowed","commit":"fbb0fd1","knative.dev/controller":"eventlistener","eventlistener":"gateway-cd-pl-pr-gitea-listener","namespace":"gramola-cicd-user1","eventlistenerUID":"f09da2a6-b828-4869-9b2c-42afad8cd849","/triggers-eventid":"fc790720-577e-49f6-992a-b893b71b0986","/trigger":"github-listener"}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Stop the log output with <span class="keyseq"><kbd>Ctrl</kbd>+<kbd>C</kbd></span>.</p>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<hr>
+<div class="footnote" id="_footnotedef_1">
+<a href="#_footnoteref_1">1</a>. <a href="https://tekton.dev/docs/triggers/interceptors/#cel-interceptors" class="bare">https://tekton.dev/docs/triggers/interceptors/#cel-interceptors</a>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="08-create-pipeline-webhooks.html" class="query-params-link">8. Create Pipelines Webhooks</a></span>
+  <span class="next"><a href="10-end-to-end-test.html" class="query-params-link">10. End to End Test</a></span>
+</nav>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <a class="rhd-logo" href="https://developers.redhat.com" target="_blank"></div>
+</footer>
+<script src="../_/js/vendor/clipboard.js"></script>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

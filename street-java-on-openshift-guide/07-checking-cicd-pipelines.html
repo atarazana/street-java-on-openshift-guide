@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Checking CICD Pipelines :: Street Java on OpenShift</title>
+    <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/07-checking-cicd-pipelines.html">
+    <link rel="prev" href="06-deploy-cicd-pipelines-with-gitops.html">
+    <link rel="next" href="08-create-pipeline-webhooks.html">
+    <meta name="generator" content="Antora 3.0.0">
+    <link rel="stylesheet" href="../_/css/site.css">
+<link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://developers.redhat.com" target="_blank"><img
+          src="../_/img/header_logo.png" height="40px" alt="Red Hat Developer Program"></a>
+      <a class="navbar-item" href="https://atarazana.github.io/street-java-on-openshift-guide">Street Java on OpenShift</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Books</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">CheatSheets</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">CheatSheet A</a>
+            <a class="navbar-item" href="#">CheatSheet B</a>
+            <a class="navbar-item" href="#">CheatSheet C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Upcoming Events</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Event A</a>
+            <a class="navbar-item" href="#">Event B</a>
+            <a class="navbar-item" href="#">Event C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">More Tutorials</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Tutorial A</a>
+            <a class="navbar-item" href="#">Tutorial B</a>
+            <a class="navbar-item" href="#">Tutorial C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="street-java-on-openshift-guide" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html" class=" query-params-link">Street Java on OpenShift</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="01-setup.html">1. Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#prerequisite">Prerequisites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#openshift">Setup OpenShift 4</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="01-setup.html#download-tutorial">Get tutorial sources</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="02-prepare-cluster.html">2. Prepare Cluster</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#deploying-core-components">Deploying core components</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#high-level-tests">High Level Tests</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="02-prepare-cluster.html#checking-quay">Checking Quay</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03-deploy-the-app.html">3. Deploy The App</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03-deploy-the-app.html#checking-helm-cli">Checking helm</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03-deploy-the-app.html#installing-street-java">Installing Street Java</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04-limit-what.html">4. Limit What?</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#checking-deployments">Checking Deployments</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#limits">Limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#limitrange-anatomy">LimitRange Anatomy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#getting-rid-of-the-limirange">Getting Rid of the LimitRange</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04-limit-what.html#checking-the-app">Checking the App</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05-deploy-a-new-version.html">5. Deploy New Version</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#anatomy-of-your-chart">Anatomy of your Chart</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola">Deploying Gramola</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola-additional">Deploying Gramola++</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#argocd-ui-filtering">ArgoCD UI Filtering</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html">6. Deploy CICD Pipelines</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-root-account-in-quay">Create Quay Robot Acc.</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#deploying-cicd-pipelines">Deploying CICD Pipelines</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-git-secret">Create Git Secret</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#create-registry-secret">Create Registry Secret</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html#grant-pull-permissions">Granting Pull Permissions</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="07-checking-cicd-pipelines.html">7. Checking CICD Pipelines</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#overview">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#tekton-triggers">Tekton Triggers</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="08-create-pipeline-webhooks.html">8. Create Pipelines Webhooks</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#pipeline-webhooks">Pipelines Webhooks</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#create-ci-webhooks">Create CI Webhooks</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="08-create-pipeline-webhooks.html#create-cd-webhooks">Create CD Webhooks</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="09-test-cicd-pipelines.html">9. Check Pipeline Webhooks</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-events-ci-web-hook">Check Events CI Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-events-cd-web-hook">Check Events CD Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-gateway-ci-web-hook">Check Gateway CI Web Hook</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="09-test-cicd-pipelines.html#check-gateway-cd-web-hook">Check Gateway CD Web Hook</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="10-end-to-end-test.html">10. End to End Test</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#introduction">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#current-status">Ⓐ Current Status</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#change-the-code">Ⓑ Change the code</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#run-ci-pipeline">Ⓒ Run CI pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#running-cd-pipeline-dev">Ⓓ Run CD pipeline (<code>dev</code>)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="10-end-to-end-test.html#running-cd-pipeline-test">Ⓔ Run CD pipeline (<code>test</code>)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Street Java on OpenShift</span>
+    <span class="version">master</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">Street Java on OpenShift</span>
+      <ul class="versions">
+        <li class="version is-current">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Street Java on OpenShift</a></li>
+    <li><a href="07-checking-cicd-pipelines.html">7. Checking CICD Pipelines</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/07-checking-cicd-pipelines.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Checking CICD Pipelines</h1>
+<div class="sect1">
+<h2 id="overview"><a class="anchor" href="#overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Well, so far we have used the command line to create the ArgoCD root application that in its turn has created all the needed elements:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ClusterTasks</p>
+</li>
+<li>
+<p>Pipelines</p>
+</li>
+<li>
+<p>Triggers</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All those elements have been created in namespace devoted to CICD, let&#8217;s have a look at the pipelines. Open the OpenShift web console and navigate to the CICD project (<em>red arrow</em>).</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Make sure that on the upper left corner the "Administrator" view is selected and that you are in the <strong>'Home&#8594;Projects'</strong> section.
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/pipelines-check-1.png" alt="Pipelines Check 1">
+</div>
+</div>
+<div class="paragraph">
+<p>Now navigate to 'Pipelines&#8594;Pipelines'. As you can see there are CI and CD pipelines for each microservice.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/pipelines-check-2.png" alt="Pipelines Check 2">
+</div>
+</div>
+<div class="sect2">
+<h3 id="events-ci-pipeline"><a class="anchor" href="#events-ci-pipeline"></a>Events CI Pipeline</h3>
+<div class="paragraph">
+<p>Le&#8217;s have a look to the <strong>CI pipeline</strong> for the <strong>gramola-events</strong> microservice <strong>'events-ci-pl'</strong>. As you can see is made of a series of tasks:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>fetch-repository:</strong> Fetches the <strong>gramola-events</strong> code fro the Gitea repository you migrated before</p>
+</li>
+<li>
+<p><strong>package:</strong> Compiles and packages the code in a JAR file</p>
+</li>
+<li>
+<p><strong>build:</strong> Builds a container image starting from a Containerfile, pushes it to the registry of images and saves the hash in an output variable</p>
+</li>
+<li>
+<p><strong>fetch-config-repository:</strong> Fetches the configuration of Gramola (remember git is the source of truth for ArgoCD)</p>
+</li>
+<li>
+<p><strong>update-image:</strong> Updates the hash in the <strong>kustomization file</strong> in the <code>dev</code> overlay of <strong>gramola-events</strong> but in a short lived feature branch</p>
+</li>
+<li>
+<p><strong>gitea-pr-create:</strong> Creates a <strong>Pull Request</strong> with the <strong>feature branch</strong> over the <strong>main branch</strong></p>
+</li>
+<li>
+<p><strong>github-pr-create:</strong> <em>N/A in this case we use Gitea</em></p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This is just an example covering the bare minimum tasks of a CI pipeline! Of course there should be other critical tasks such as: unit testing, code quality, &#8230;&#8203;
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/pipelines-check-3.png" alt="Pipelines Check 3">
+</div>
+</div>
+<div class="sect3">
+<h4 id="when-expressions-to-the-rescue"><a class="anchor" href="#when-expressions-to-the-rescue"></a>'When Expressions' to the rescue</h4>
+<div class="paragraph">
+<p>Have another look at the pipeline diagram and check that there are two tasks that could potentially run in paralell <code>gitea-pr-create</code> and <code>github-pr-create</code>. Altought these tasks could run in paralell we don&#8217;t want that to happen because one is targeted to <strong>Gitea</strong> and the other one to <strong>Github</strong>.</p>
+</div>
+<div class="paragraph">
+<p><strong>What have we done to be sure that only the proper task is run?</strong></p>
+</div>
+<div class="paragraph">
+<p>We have used 'when expressions', for instance this is the when expression that will trigger task <code>gitea-pr-create</code> only if the <strong>GIT_PROVIDER</strong> is <strong>gitea</strong>, which is the case by the way.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">- name: gitea-pr-create
+  ...
+  when:
+    - input: $(params.GIT_PROVIDER)
+        operator: in
+        values:
+        - gitea</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Please, copy the next link and paste it in a new tab to open our CI pipeline and have a look to the pipeline diagram.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://console-openshift-console.apps.%BASE_SUBDOMAIN%/k8s/ns/gramola-cicd-%USERNAME%/tekton.dev~v1beta1~Pipeline/events-ci-pl</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can have a look to the diagram, hover over the tasks or take a look at the yaml.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="events-cd-pipeline"><a class="anchor" href="#events-cd-pipeline"></a>Events CD Pipeline</h3>
+<div class="paragraph">
+<p>Now, navigate back and open the <strong>CD pipeline</strong> for <strong>gramola-events</strong>, called <strong>'events-cd-pl'</strong>. This time the list of tasks is shorter&#8230;&#8203;</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>argocd-sync:</strong> This triggers both the refresh from the configuration git repository and the assets synchronization using the <code>argocd</code> cli.</p>
+</li>
+<li>
+<p><strong>fetch-config-repository:</strong> Fetches the configuration of Gramola (remember git is the source of truth for ArgoCD)</p>
+</li>
+<li>
+<p><strong>update-image:</strong> Updates the hash in the <strong>kustomization file</strong> in the <code>dev</code> overlay of <strong>gramola-events</strong> but in a short lived feature branch</p>
+</li>
+<li>
+<p><strong>gitea-pr-create:</strong> Creates a <strong>Pull Request</strong> with the <strong>feature branch</strong> over the <strong>main branch</strong></p>
+</li>
+<li>
+<p><strong>github-pr-create:</strong> <em>N/A in this case we use Gitea</em></p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/pipelines-check-4.png" alt="Pipelines Check 4">
+</div>
+</div>
+<div class="paragraph">
+<p>Finally if you navigate to 'Pipelines&#8594;Triggers' you&#8217;ll see there are many of them, we&#8217;ll only use those for Gitea but the example is ready for receiving events from GitHub and GitLab.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/pipelines-check-5.png" alt="Pipelines Check 5">
+</div>
+</div>
+<div class="paragraph">
+<p>Well, triggers are in place but we need web hooks to feed them!</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tekton-triggers"><a class="anchor" href="#tekton-triggers"></a>Tekton Triggers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One key element in DevOps is the ability to run CI and CD pipelines whenever changes are made to the source code or deployment configuration (as in the case of GitOps). In general we achieve this by setting webhooks in our git repos.</p>
+</div>
+<div class="paragraph">
+<p>The idea is simple, whenever you interact with a git repository internal events are generated, if you create a webhook for certain events those events (JSON objects in our case) are sent out to a URL. In our case the URL is the route of an <strong>EventListener</strong>. An <strong>EventLister</strong> is nothing more than a POD that runs some logic that filters, transforms and maps raw event data to create a <strong>PipelineRun</strong> object. The following picture shows how the event is sent out from the webhook to the event listener route and from there through a <strong>Service</strong> to a pod which runs the <strong>EventListener</strong> logic.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/tekton-triggers-1.png" alt="Tekton Triggers">
+</div>
+</div>
+<div class="sect2">
+<h3 id="event-listener"><a class="anchor" href="#event-listener"></a>Event Listener</h3>
+<div class="paragraph">
+<p>Find below an example of <strong>EventListener</strong>, as you can see this descriptor <strong><em>ties together interceptors and bindings to prepare data for a template</em></strong>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: events-ci-pl-push-gitea-listener
+spec:
+  triggers:
+    - name: gitea-listener
+      interceptors:
+        - ref:
+            apiVersion: triggers.tekton.dev
+            kind: ClusterInterceptor
+            name: github <i class="conum" data-value="1"></i><b>(1)</b>
+          params:
+            - name: eventTypes
+              value:
+                - push
+      bindings:
+        - kind: TriggerBinding
+          ref: events-ci-pl-push-gitea-trigger-binding <i class="conum" data-value="2"></i><b>(2)</b>
+      template:
+        ref: events-ci-pl-push-trigger-template <i class="conum" data-value="3"></i><b>(3)</b></code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>This <strong>interceptor</strong> is for Github (also works for Gitea) and let in only the push events</p>
+</li>
+<li>
+<p>This is the reference to the <strong>TriggerBinding</strong> we want to use</p>
+</li>
+<li>
+<p>Reference to the <strong>Template</strong> that is used to create the <strong>PipelineRun</strong></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The <strong>EventListener</strong> logic proceeds as follows:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Once the event reaches the pod, the defined <strong>Interceptors</strong> are executed to turn the raw event data into a well defined payload.</p>
+</li>
+<li>
+<p><strong>Bindings</strong> are in charge of mapping raw event values to variables which can be used later</p>
+</li>
+<li>
+<p>The <strong>Template</strong> is where the mapped and trasformed data is used to create a <strong>PipelineRun</strong> object which will be used to execute the corresponding pipeline.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The following picture shows graphically the flow explained above.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/tekton-triggers-2.png" alt="Tekton Triggers">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trigger-binding"><a class="anchor" href="#trigger-binding"></a>Trigger Binding</h3>
+<div class="paragraph">
+<p>Let&#8217;s have a closer look to the <strong>TriggerBinding</strong> descriptor.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: events-ci-pl-push-gitea-trigger-binding <i class="conum" data-value="1"></i><b>(1)</b>
+spec:
+  params:
+    - name: gitRepositoryUrl <i class="conum" data-value="2"></i><b>(2)</b>
+      value: $(body.repository.clone_url) <i class="conum" data-value="3"></i><b>(3)</b>
+    - name: gitRepository
+      value: $(body.repository.full_name)
+    - name: gitRevision
+      value: $(body.after)
+    - name: contentType
+      value: $(header.Content-Type)
+    - name: gitId
+      value: $(body.after)
+    - name: gitProvider
+      value: gitea</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Name used to refer to from the <strong>EventListener</strong></p>
+</li>
+<li>
+<p>Name of a parameter to be created</p>
+</li>
+<li>
+<p>Attribute from the event payload mapped to the parameter to be created</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="trigger-template"><a class="anchor" href="#trigger-template"></a>Trigger Template</h3>
+<div class="paragraph">
+<p>Finally let&#8217;s do the same with the TriggerTemplate.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: events-ci-pl-push-trigger-template
+spec:
+  params: <i class="conum" data-value="1"></i><b>(1)</b>
+    - name: gitRepositoryUrl
+    - name: gitRepository
+    - name: gitRevision
+    - name: gitId
+    - name: gitProvider
+  resourcetemplates: <i class="conum" data-value="2"></i><b>(2)</b>
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: events-ci-pl-push-plr-
+        labels:
+          app.kubernetes.io/instance: events
+          pipeline.openshift.io/runtime: quarkus
+          pipeline.openshift.io/type: knative
+          tekton.dev/pipeline: events-ci-pl
+        namespace: gramola-cicd-%USERNAME%
+      spec:
+        params:
+          - name: APP_NAME
+            value: gramola-events
+          - name: GIT_PROVIDER
+            value: $(tt.params.gitProvider)
+          - name: GIT_REPO
+            value: $(tt.params.gitRepositoryUrl)
+          - name: GIT_REPO_NAME
+            value: $(tt.params.gitRepository)
+          - name: GIT_REVISION
+            value: $(tt.params.gitRevision)
+          - name: GIT_REPO_CONFIG
+            value: &gt;-
+              https://repository-gitea-system.apps.%BASE_SUBDOMAIN%/%USERNAME%/gramola.git
+          - name: GIT_REVISION_CONFIG
+            value: main
+          - name: IMAGE_NAME
+            value: quay.io/dummy/gramola-events
+          - name: IMAGE_TAG
+            value: $(tt.params.gitRevision)
+          - name: PATH_CONTEXT
+            value: .
+          - name: QUARKUS_PROFILE
+            value: prod
+          - name: DB_HOST
+            value: events-database
+          - name: REVISION_NAME
+            value: v1
+        pipelineRef: <i class="conum" data-value="3"></i><b>(3)</b>
+          name: events-ci-pl
+        serviceAccountName: build-bot <i class="conum" data-value="4"></i><b>(4)</b>
+        timeout: 1h0m0s
+        workspaces: <i class="conum" data-value="5"></i><b>(5)</b>
+          - name: workspace-source
+            persistentVolumeClaim:
+              claimName: events-source-pvc
+          - name: workspace-cache
+            persistentVolumeClaim:
+              claimName: events-cache-pvc</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>These parameters should have been defined in the <strong>TriggerBinding</strong></p>
+</li>
+<li>
+<p>Resources to be created (a <strong>PipelineRun</strong> in this case) using literals and parameters from the <strong>TriggerBinding</strong> (<code>tt`</code>)</p>
+</li>
+<li>
+<p><strong>Reference to the pipeline to be run</strong> using the <strong>PipelineRun</strong> object created with this template</p>
+</li>
+<li>
+<p><strong>ServiceAccount</strong> to be used when running the pipeline</p>
+</li>
+<li>
+<p><strong>Workspaces</strong> mapped to storages, using PVCs in this case</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Interceptors are specific for the source of the event, hence, in general, specific for the git provider: github, gitlab, etc., and the event itself.</p>
+</div>
+<div class="paragraph">
+<p>For example the interceptor for the <strong>PushEvent</strong> from <strong>GitHub</strong> will put the <strong>git repository url</strong> into <strong>$(body.repository.clone_url)</strong> and the <strong>git revision</strong> into <strong>$(body.after)</strong>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="06-deploy-cicd-pipelines-with-gitops.html" class="query-params-link">6. Deploy CICD Pipelines</a></span>
+  <span class="next"><a href="08-create-pipeline-webhooks.html" class="query-params-link">8. Create Pipelines Webhooks</a></span>
+</nav>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <a class="rhd-logo" href="https://developers.redhat.com" target="_blank"></div>
+</footer>
+<script src="../_/js/vendor/clipboard.js"></script>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
