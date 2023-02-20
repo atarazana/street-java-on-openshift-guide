@@ -33,12 +33,12 @@ version.BuildInfo{Version:"v3.6.2+5.el8", GitCommit:"eb607dd4f123eaedab662cef210
 [#installing-street-java]
 == Installing Street Java
 
-Ok, we're ready to deploy our application. First we'll create a project:
+Ok, we're ready to deploy our application. As part of the lab prepararion we have created a project for you: `{street-java-namespace}`. Run this command to be sure this project is the default one.
 
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-oc new project {street-java-namespace}
+oc project {street-java-namespace}
 ----
 
 Now let's install our helm chart:

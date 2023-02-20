@@ -121,6 +121,7 @@ oc rollout restart deployment fruit-service-db -n {street-java-namespace}
 == Checking the App
 
 Run this command:
+
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
@@ -133,6 +134,18 @@ You should get a list of fruits like this:
 ----
 [{"id":1,"name":"Cherry"},{"id":51,"name":"Apple"},{"id":101,"name":"Banana"}]
 ----
+
+[CAUTION]
+====
+Maybe the app is not ready yet, run this command to see if it's ready or not and run the curl command again whenever is ready.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc get deploy -n {street-java-namespace}
+----
+
+====
 
 Or use this link, you should see the UI of the app and all green.
 

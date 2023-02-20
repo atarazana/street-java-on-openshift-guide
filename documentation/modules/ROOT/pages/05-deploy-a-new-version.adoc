@@ -41,6 +41,343 @@ dependencies: <2>
 
 As you saw above our chart depends on two charts: `fruit-gateway` and `fruit-service`.
 
-This charts are in folder `helm/street-java/charts` and each of them consists of the same sections as the general chart: `Chart.yaml`, `charts` and `values` and another folder `templates`.
+This charts are in folder `helm/street-java/charts` and each of them consists of the same sections as the general chart: `Chart.yaml`, `charts` and `values` _AND_ another folder; *`templates`*.
 
 Is in the `templates` folder where you will find templates to create the `Deployments`, `Services`, `Routes`, `ConfigMaps`, etc.
+
+_values.yaml_
+
+The `values.yaml` file is where you can tweak the installation of a chart using different values for certain attributes. In our case there is a general `values` file and another two for each of the charts `fruit-gateway` and `fruit-service`. The primary `values` file allows you to override the `values` of the secondary `values` files.
+
+For instance, here you are the values in the primary `values.yaml` file:
+
+NOTE: Values for a chart are in a section called as the correponding chart. 
+
+[source,yaml,attributes]
+----
+fruit-gateway:
+  enabled: true
+  image: <1>
+    repository: quay.io/atarazana/street-java-fruit-gateway@sha256
+    tag: "3d0787554a289b6235f4cd424a2642ed8d5fed41c627a2fe3b8e0acf14272420"
+  env:
+  - name: FRUIT_SERVICE_URL
+    value: "http://fruit-service:8080"
+  - name: OTL_ENDPOINT
+    value: http://jaeger-all-in-one-inmemory-collector-headless.street-java-infra:4317
+
+fruit-service:
+  enabled: false
+  image:
+    repository: quay.io/atarazana/street-java-fruit-service@sha256
+    tag: "3b8ac59ed5a8ddc5edc60f3e3f64690bc36c25582185923a14b90f906d57bb7c"
+  env:
+  - name: JAVA_OPTS
+    value: "-Dspring.profiles.active=openshift -Xms192m -Xmx768m"
+  - name: OTL_ENDPOINT
+    value: http://jaeger-all-in-one-inmemory-collector-headless.street-java-infra:4317
+----
+<1> Hash of the image to use in the `fruit-gateway` deployment
+
+Pay attention to the values in the primary file for `fruit-gateway` that are overriden:
+
+[source,yaml,attributes]
+----
+...
+
+image: <1>
+  repository: quay.io/atarazana/street-java-fruit-gateway@sha256
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "4b70587d76955fc02834cad278d39b55a2d96550dc9d460df7a999efc0c4c63a"
+
+...
+
+podSecurityContext: <2>
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+env: <1>
+  - name: FRUIT_SERVICE_URL
+    value: "http://fruit-service:8080"
+  - name: OTL_ENDPOINT
+    value: http://jaeger-all-in-one-inmemory-collector-headless:4317
+...
+----
+<1> These sections are overriden in the primary values file
+<2> This section is not overriden
+
+[#building-a-new-version]
+== Building a New Version
+
+Before we actually deploy a new version we have to make a change in the code and build the new image.
+
+Please, open `fruit-gateway/src/main/resources/application.properties` and change the value of property `config.service.name` to `fruit-gateway`.
+
+[source,properties,attributes]
+----
+config.service.name=fruit-gateway
+----
+
+Now build the image:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+./fruit-gateway/image-build.sh 
+----
+
+This is the expected result:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< com.redhat.fruit.gateway:fruit-gateway >---------------
+[INFO] Building fruit-gateway 1.0.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+...
+STEP 7/10: EXPOSE 8080
+--> 0c5aa64d56d
+STEP 8/10: USER 185
+--> f717045bae2
+STEP 9/10: ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+--> 2444b45014e
+STEP 10/10: ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+COMMIT street-java-fruit-gateway:a7d7a1534ca13c67de3472bb7d4e06cf3d0d59f5
+--> 96295501f61
+Successfully tagged localhost/street-java-fruit-gateway:a7d7a1534ca13c67de3472bb7d4e06cf3d0d59f5
+96295501f6153f19c3a6e389fd76741eece0b7afd7b135c052f2f5612d702f40
+----
+
+[#pushing-new-image]
+== Pushing New Image
+
+Once we have our new image we have to push it to the image registry. In this lab we have installed Quay for you so that you use it as you would use your own enterprise registry.
+
+In order to copy the image you're going to use `skopeo`, if you want to learn more about this utility go to link:https://skopeo.io[skopeo].
+
+Before you can copy the image to need to log in the registry server:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+skopeo login -u {username} -p {password} {quay-server}
+----
+
+You should see this message:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+Login Succeeded!
+----
+
+Run this command to load some environment variables:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+export PROJECT_ID=street-java
+export ARTIFACT_VERSION=$(mvn -f fruit-gateway/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+export ARTIFACT_ID=$(mvn -f fruit-gateway/pom.xml help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+export GIT_HASH=$(git rev-parse HEAD)
+----
+
+Now, you're logged in and the environmen is set, let's copy the image:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+skopeo copy containers-storage:localhost/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} docker://{quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
+----
+
+If it all goes well, you will see messages like these:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+Getting image source signatures
+Copying blob 74cf83aebece done  
+Copying blob c1488d110df8 done  
+Copying blob e96a181d185e done  
+Copying blob 2a4dd233679f done  
+Copying blob 75d18d488805 done  
+Copying blob ef0796b11c39 done  
+Copying config 99824e01cb done  
+Writing manifest to image destination
+Storing signatures
+----
+
+[#getting-the-image-digest]
+== Getting the Image Digest
+
+Finally let's obtain the digest of the image you just pushed to the registry, you will needed later:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+export IMAGE_DIGEST_RAW=$(skopeo inspect docker://{quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .Digest)
+export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
+echo ${IMAGE_DIGEST}
+----
+
+You will get a string like this:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+b9c14b03f13206dd25e92a629d8d8d6709132b25b68a39f648c8dee3d57a0bb9
+----
+
+[#update-image-digest]
+== Update the Image Digest in values.yaml
+
+It's time to update the digest of the new `fruit-gateway` image in the primary `values.yaml` file. Open `./helm/street-java/values.yaml` locate these properties:
+
+[source,yaml,attributes]
+----
+fruit-gateway:
+  enabled: true
+  image:
+    repository: quay.io/atarazana/street-java-fruit-gateway@sha256
+    tag: "3d0787554a289b6235f4cd424a2642ed8d5fed41c627a2fe3b8e0acf14272420"
+----
+
+Substitute `repository` with the one below, and substite the string `NEW_TAG` with the digest you got before and that should be in the environment variable `IMAGE_DIGEST`.
+
+[.console-input]
+[source,yaml, subs="+macros,+attributes"]
+----
+fruit-gateway:
+  enabled: true
+  image:
+    repository: {quay-server}/{username}/street-java-fruit-gateway@sha256
+    tag: "NEW_TAG" 
+----
+
+Once you have changed the values of `fruit-gateway->image->repository` and `fruit-gateway->image->tag` please run this command to upgrade the helm chart:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+helm upgrade street-java helm/street-java
+----
+
+Expect and output similar to this one:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+Release "street-java" has been upgraded. Happy Helming!
+NAME: street-java
+LAST DEPLOYED: Mon Feb 20 18:31:59 2023
+NAMESPACE: {street-java-namespace}
+STATUS: deployed
+REVISION: 2
+----
+
+[#did-it-work]
+== Did it Work?
+
+Let's find out it our app still works properly. If you open the next link and pay attention to the `fruit-gateway` deployment.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+{street-java-link}
+----
+
+Or run the next command:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+curl https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/fruits
+----
+
+You will think that yes... it's still there alive and kicking... but the devil is in the details...
+
+Let's have a look to the deployment object:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc get deployment/fruit-gateway -n {street-java-namespace} -o yaml
+----
+
+And you should get something like:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+...
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2023-02-20T18:26:04Z"
+    lastUpdateTime: "2023-02-20T18:26:04Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2023-02-20T18:39:34Z"
+    lastUpdateTime: "2023-02-20T18:39:34Z"
+    message: ReplicaSet "fruit-gateway-d5b78849b" has timed out progressing.
+    reason: ProgressDeadlineExceeded
+    status: "False"
+    type: Progressing <1>
+  observedGeneration: 4
+  readyReplicas: 1
+  replicas: 2
+  unavailableReplicas: 1
+  updatedReplicas: 1
+----
+<1> It's progressing!
+
+Ok, so it's still working but with the previous image... that means we have to keep digging.
+
+[#events]
+== Events
+
+One way to find out why something is not working properly is having a look to the `Events` stream.
+
+Run this command 
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc get events -n {street-java-namespace} | grep Failed
+----
+
+You should see some good candidates like:
+
+[.console-output]
+[source,sh,attributes]
+----
+17m         Warning   Failed              pod/fruit-gateway-d5b78849b-jmt7d     Failed to pull image "myregistry-quay-quay-system.apps.cluster-fcj9p.fcj9p.sandbox1011.opentlc.com/user1/street-java-fruit-gateway@sha256:b9c14b03f13206dd25e92a629d8d8d6709132b25b68a39f648c8dee3d57a0bb9": rpc error: code = Unknown desc = reading manifest sha256:b9c14b03f13206dd25e92a629d8d8d6709132b25b68a39f648c8dee3d57a0bb9 in myregistry-quay-quay-system.apps.cluster-fcj9p.fcj9p.sandbox1011.opentlc.com/user1/street-java-fruit-gateway: unauthorized: access to the requested resource is not authorized
+17m         Warning   Failed              pod/fruit-gateway-d5b78849b-jmt7d     Error: ErrImagePull
+17m         Warning   Failed              pod/fruit-gateway-d5b78849b-jmt7d     Error: ImagePullBackOff
+----
+
+It looks like the new image we just pushed to our enterprise registry cannot be pulled. That should ring a bell... maybe the repository we created by pushing a *first* image has created a *private* registry... Let's find out.
+
+IMPORTANT: At the end of the first line you will find this message _unauthorized: access to the requested resource is not authorized_
+
+Open the next link to the registry and check if our guess is correct.
+
+[NOTE]
+====
+Use this credentials:
+
+- *User:* {username}
+- *Password:* {password}
+====
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{quay-server}/repository/{username}/street-java-fruit-gateway
+----
