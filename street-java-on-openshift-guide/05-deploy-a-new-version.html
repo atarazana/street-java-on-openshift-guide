@@ -352,10 +352,432 @@ dependencies: <i class="conum" data-value="2"></i><b>(2)</b>
 <p>As you saw above our chart depends on two charts: <code>fruit-gateway</code> and <code>fruit-service</code>.</p>
 </div>
 <div class="paragraph">
-<p>This charts are in folder <code>helm/street-java/charts</code> and each of them consists of the same sections as the general chart: <code>Chart.yaml</code>, <code>charts</code> and <code>values</code> and another folder <code>templates</code>.</p>
+<p>This charts are in folder <code>helm/street-java/charts</code> and each of them consists of the same sections as the general chart: <code>Chart.yaml</code>, <code>charts</code> and <code>values</code> <em>AND</em> another folder; <strong><code>templates</code></strong>.</p>
 </div>
 <div class="paragraph">
 <p>Is in the <code>templates</code> folder where you will find templates to create the <code>Deployments</code>, <code>Services</code>, <code>Routes</code>, <code>ConfigMaps</code>, etc.</p>
+</div>
+<div class="paragraph">
+<p><em>values.yaml</em></p>
+</div>
+<div class="paragraph">
+<p>The <code>values.yaml</code> file is where you can tweak the installation of a chart using different values for certain attributes. In our case there is a general <code>values</code> file and another two for each of the charts <code>fruit-gateway</code> and <code>fruit-service</code>. The primary <code>values</code> file allows you to override the <code>values</code> of the secondary <code>values</code> files.</p>
+</div>
+<div class="paragraph">
+<p>For instance, here you are the values in the primary <code>values.yaml</code> file:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Values for a chart are in a section called as the correponding chart.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">fruit-gateway:
+  enabled: true
+  image: <i class="conum" data-value="1"></i><b>(1)</b>
+    repository: quay.io/atarazana/street-java-fruit-gateway@sha256
+    tag: "3d0787554a289b6235f4cd424a2642ed8d5fed41c627a2fe3b8e0acf14272420"
+  env:
+  - name: FRUIT_SERVICE_URL
+    value: "http://fruit-service:8080"
+  - name: OTL_ENDPOINT
+    value: http://jaeger-all-in-one-inmemory-collector-headless.street-java-infra:4317
+
+fruit-service:
+  enabled: false
+  image:
+    repository: quay.io/atarazana/street-java-fruit-service@sha256
+    tag: "3b8ac59ed5a8ddc5edc60f3e3f64690bc36c25582185923a14b90f906d57bb7c"
+  env:
+  - name: JAVA_OPTS
+    value: "-Dspring.profiles.active=openshift -Xms192m -Xmx768m"
+  - name: OTL_ENDPOINT
+    value: http://jaeger-all-in-one-inmemory-collector-headless.street-java-infra:4317</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Hash of the image to use in the <code>fruit-gateway</code> deployment</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Pay attention to the values in the primary file for <code>fruit-gateway</code> that are overriden:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">...
+
+image: <i class="conum" data-value="1"></i><b>(1)</b>
+  repository: quay.io/atarazana/street-java-fruit-gateway@sha256
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "4b70587d76955fc02834cad278d39b55a2d96550dc9d460df7a999efc0c4c63a"
+
+...
+
+podSecurityContext: <i class="conum" data-value="2"></i><b>(2)</b>
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+env: <i class="conum" data-value="1"></i><b>(1)</b>
+  - name: FRUIT_SERVICE_URL
+    value: "http://fruit-service:8080"
+  - name: OTL_ENDPOINT
+    value: http://jaeger-all-in-one-inmemory-collector-headless:4317
+...</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>These sections are overriden in the primary values file</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>This section is not overriden</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="building-a-new-version"><a class="anchor" href="#building-a-new-version"></a>Building a New Version</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we actually deploy a new version we have to make a change in the code and build the new image.</p>
+</div>
+<div class="paragraph">
+<p>Please, open <code>fruit-gateway/src/main/resources/application.properties</code> and change the value of property <code>config.service.name</code> to <code>fruit-gateway</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-properties hljs" data-lang="properties">config.service.name=fruit-gateway</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now build the image:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">./fruit-gateway/image-build.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is the expected result:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">[INFO] Scanning for projects...
+[INFO]
+[INFO] ---------------&lt; com.redhat.fruit.gateway:fruit-gateway &gt;---------------
+[INFO] Building fruit-gateway 1.0.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+...
+STEP 7/10: EXPOSE 8080
+--&gt; 0c5aa64d56d
+STEP 8/10: USER 185
+--&gt; f717045bae2
+STEP 9/10: ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+--&gt; 2444b45014e
+STEP 10/10: ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+COMMIT street-java-fruit-gateway:a7d7a1534ca13c67de3472bb7d4e06cf3d0d59f5
+--&gt; 96295501f61
+Successfully tagged localhost/street-java-fruit-gateway:a7d7a1534ca13c67de3472bb7d4e06cf3d0d59f5
+96295501f6153f19c3a6e389fd76741eece0b7afd7b135c052f2f5612d702f40</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="pushing-new-image"><a class="anchor" href="#pushing-new-image"></a>Pushing New Image</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once we have our new image we have to push it to the image registry. In this lab we have installed Quay for you so that you use it as you would use your own enterprise registry.</p>
+</div>
+<div class="paragraph">
+<p>In order to copy the image you&#8217;re going to use <code>skopeo</code>, if you want to learn more about this utility go to <a href="https://skopeo.io">skopeo</a>.</p>
+</div>
+<div class="paragraph">
+<p>Before you can copy the image to need to log in the registry server:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">skopeo login -u %USERNAME% -p %PASSWORD% myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see this message:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">Login Succeeded!</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run this command to load some environment variables:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">export PROJECT_ID=street-java
+export ARTIFACT_VERSION=$(mvn -f fruit-gateway/pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)
+export ARTIFACT_ID=$(mvn -f fruit-gateway/pom.xml help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+export GIT_HASH=$(git rev-parse HEAD)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, you&#8217;re logged in and the environmen is set, let&#8217;s copy the image:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">skopeo copy containers-storage:localhost/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} docker://myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/%USERNAME%/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If it all goes well, you will see messages like these:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">Getting image source signatures
+Copying blob 74cf83aebece done
+Copying blob c1488d110df8 done
+Copying blob e96a181d185e done
+Copying blob 2a4dd233679f done
+Copying blob 75d18d488805 done
+Copying blob ef0796b11c39 done
+Copying config 99824e01cb done
+Writing manifest to image destination
+Storing signatures</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="getting-the-image-digest"><a class="anchor" href="#getting-the-image-digest"></a>Getting the Image Digest</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Finally let&#8217;s obtain the digest of the image you just pushed to the registry, you will needed later:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">export IMAGE_DIGEST_RAW=$(skopeo inspect docker://myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/%USERNAME%/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .Digest)
+export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
+echo ${IMAGE_DIGEST}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You will get a string like this:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">b9c14b03f13206dd25e92a629d8d8d6709132b25b68a39f648c8dee3d57a0bb9</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="update-image-digest"><a class="anchor" href="#update-image-digest"></a>Update the Image Digest in values.yaml</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It&#8217;s time to update the digest of the new <code>fruit-gateway</code> image in the primary <code>values.yaml</code> file. Open <code>./helm/street-java/values.yaml</code> locate these properties:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">fruit-gateway:
+  enabled: true
+  image:
+    repository: quay.io/atarazana/street-java-fruit-gateway@sha256
+    tag: "3d0787554a289b6235f4cd424a2642ed8d5fed41c627a2fe3b8e0acf14272420"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Substitute <code>repository</code> with the one below, and substite the string <code>NEW_TAG</code> with the digest you got before and that should be in the environment variable <code>IMAGE_DIGEST</code>.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">fruit-gateway:
+  enabled: true
+  image:
+    repository: myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/%USERNAME%/street-java-fruit-gateway@sha256
+    tag: "NEW_TAG"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once you have changed the values of <code>fruit-gateway&#8594;image&#8594;repository</code> and <code>fruit-gateway&#8594;image&#8594;tag</code> please run this command to upgrade the helm chart:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">helm upgrade street-java helm/street-java</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Expect and output similar to this one:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">Release "street-java" has been upgraded. Happy Helming!
+NAME: street-java
+LAST DEPLOYED: Mon Feb 20 18:31:59 2023
+NAMESPACE: street-java-%USERNAME%
+STATUS: deployed
+REVISION: 2</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="did-it-work"><a class="anchor" href="#did-it-work"></a>Did it Work?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s find out it our app still works properly. If you open the next link and pay attention to the <code>fruit-gateway</code> deployment.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">fruit-gateway-street-java-%USERNAME%.apps.%BASE_SUBDOMAIN%</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or run the next command:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/api/fruits</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You will think that yes&#8230;&#8203; it&#8217;s still there alive and kicking&#8230;&#8203; but the devil is in the details&#8230;&#8203;</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s have a look to the deployment object:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc get deployment/fruit-gateway -n street-java-%USERNAME% -o yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And you should get something like:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">...
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2023-02-20T18:26:04Z"
+    lastUpdateTime: "2023-02-20T18:26:04Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2023-02-20T18:39:34Z"
+    lastUpdateTime: "2023-02-20T18:39:34Z"
+    message: ReplicaSet "fruit-gateway-d5b78849b" has timed out progressing.
+    reason: ProgressDeadlineExceeded
+    status: "False"
+    type: Progressing <i class="conum" data-value="1"></i><b>(1)</b>
+  observedGeneration: 4
+  readyReplicas: 1
+  replicas: 2
+  unavailableReplicas: 1
+  updatedReplicas: 1</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>It&#8217;s progressing!</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Ok, so it&#8217;s still working but with the previous image&#8230;&#8203; that means we have to keep digging.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="events"><a class="anchor" href="#events"></a>Events</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One way to find out why something is not working properly is having a look to the <code>Events</code> stream.</p>
+</div>
+<div class="paragraph">
+<p>Run this command</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc get events -n street-java-%USERNAME% | grep Failed</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see some good candidates like:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">17m         Warning   Failed              pod/fruit-gateway-d5b78849b-jmt7d     Failed to pull image "myregistry-quay-quay-system.apps.cluster-fcj9p.fcj9p.sandbox1011.opentlc.com/user1/street-java-fruit-gateway@sha256:b9c14b03f13206dd25e92a629d8d8d6709132b25b68a39f648c8dee3d57a0bb9": rpc error: code = Unknown desc = reading manifest sha256:b9c14b03f13206dd25e92a629d8d8d6709132b25b68a39f648c8dee3d57a0bb9 in myregistry-quay-quay-system.apps.cluster-fcj9p.fcj9p.sandbox1011.opentlc.com/user1/street-java-fruit-gateway: unauthorized: access to the requested resource is not authorized
+17m         Warning   Failed              pod/fruit-gateway-d5b78849b-jmt7d     Error: ErrImagePull
+17m         Warning   Failed              pod/fruit-gateway-d5b78849b-jmt7d     Error: ImagePullBackOff</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It looks like the new image we just pushed to our enterprise registry cannot be pulled. That should ring a bell&#8230;&#8203; maybe the repository we created by pushing a <strong>first</strong> image has created a <strong>private</strong> registry&#8230;&#8203; Let&#8217;s find out.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+At the end of the first line you will find this message <em>unauthorized: access to the requested resource is not authorized</em>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Open the next link to the registry and check if our guess is correct.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Use this credentials:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>User:</strong> %USERNAME%</p>
+</li>
+<li>
+<p><strong>Password:</strong> %PASSWORD%</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/repository/%USERNAME%/street-java-fruit-gateway</code></pre>
+</div>
 </div>
 </div>
 </div>

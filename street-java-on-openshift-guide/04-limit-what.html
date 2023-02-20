@@ -467,6 +467,25 @@ oc rollout restart deployment fruit-service-db -n street-java-%USERNAME%</code><
 <pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">[{"id":1,"name":"Cherry"},{"id":51,"name":"Apple"},{"id":101,"name":"Banana"}]</code></pre>
 </div>
 </div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Maybe the app is not ready yet, run this command to see if it&#8217;s ready or not and run the curl command again whenever is ready.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc get deploy -n street-java-%USERNAME%</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Or use this link, you should see the UI of the app and all green.</p>
 </div>
