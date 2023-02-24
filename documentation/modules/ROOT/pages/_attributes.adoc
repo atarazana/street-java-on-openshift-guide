@@ -9,6 +9,7 @@
 
 :namespace-suffix: {username}
 :street-java-namespace: street-java-{username}
+:street-java-pull-secret-name: street-java-pull-secret
 
 :street-java-link: fruit-gateway-{street-java-namespace}.{cluster-subdomain}
 

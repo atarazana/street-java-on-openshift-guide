@@ -1,0 +1,167 @@
+= Good Robot
+include::_attributes.adoc[]
+
+Well, apparently you have to add credentials somehow to allow pulling an image from a private repository.
+
+In this chapter you will learn how to create credentials and use them to fix this situation.
+
+
+
+IMPORTANT: It's a best practice avoid storing secrets in a git repository even if it's private. There are several ways to deal with secrets in this kind of scenarios but in this case we're going to manage them manually for the sake of simplicity.
+
+[#create-root-account-in-quay]
+== Create a Robot Account in Quay
+
+So here comes the good robot of the title. The suggested approach to use credentials to push/pull images from a system, like in this case, is using a *robot account* instead of using a personal account. Next you will learn to create a *robot account* in Quay.
+
+include::partial$create-robot-account-in-quay.adoc[]
+
+[#create-registry-secret]
+== Create Registry Secret
+
+Ok, so you need to make your deployment use some credentials to allow it to pull the new image... well, let's get started.
+
+NOTE: This is not the only way to do it, you could add credentials directly to the Deployment...
+
+The next set of commands will ask you for the *username* and *password* of the container registry account you already had or created above in this chapter or in your own registry.
+
+If you have followed all the instructions then copy and paste the next command and run it. If you have chosen to use your own registry, change accordingly.
+
+*USERNAME*
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+export CONTAINER_REGISTRY_USERNAME="{username}+cicd"
+----
+
+*TOKEN*
+
+Please use the next link to open the details of your robot account.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{quay-server}/user/{username}?tab=robots
+----
+
+Then click on the `{username}-cicd` link, keep this link open you will have to copy the token.
+
+image::quay-installed-view-credentials-robot-account-userX.png[Robot Account Credentials]
+
+Now you have to run the following command, then go back to your browser and copy the token as in the image below.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+echo "CONTAINER_REGISTRY_PASSWORD: " && read -s CONTAINER_REGISTRY_PASSWORD
+----
+
+image::quay-installed-copy-credentials-robot-account-userX.png[Robot Account Credentials]
+
+Now that we have gather all the needed information let's create the secret, named `{street-java-pull-secret-name}`.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+if [ -z "${CONTAINER_REGISTRY_USERNAME}" ] && [ -z "${CONTAINER_REGISTRY_PASSWORD}" ]; then
+    echo "You should provide a value for CONTAINER_REGISTRY_USERNAME and CONTAINER_REGISTRY_PASSWORD"
+else
+oc create -n {street-java-namespace} secret docker-registry {street-java-pull-secret-name} \
+  --docker-server=https://$CONTAINER_REGISTRY_SERVER \
+  --docker-username=$CONTAINER_REGISTRY_USERNAME \
+  --docker-password=$CONTAINER_REGISTRY_PASSWORD
+fi
+----
+
+[#grant-pull-permissions]
+== Granting Pull Permissions
+
+You have created the secret with the robot account credentials, but you haven't used that secret anywhere yet.
+
+The idea is to update the deployment object so that our secret can be used to pull images from our registry.
+
+In any `Deployment` object this means to add an `imagePullSecrets` array to `spec->template->spec` but instead of doing it manually we're going to do it using a value in our helm chart as we did before with the hash of the new image. So, please open `helm/street-java/values.yaml`; you should see something like this.
+
+[source,yaml,attributes]
+----
+fruit-gateway:
+  enabled: true
+  image:
+    repository: {quay-server}/{username}/street-java-fruit-gateway@sha256
+    tag: "5b5bd615dfaf15b672a550138e6124815f823c4f424d2d30b13d26794376418f"
+  imagePullSecrets: []
+----
+
+And change it to look like this. Only change the 
+
+[source,yaml, subs="+macros,+attributes"]
+----
+fruit-gateway:
+  enabled: true
+  image:
+    repository: {quay-server}/{username}/street-java-fruit-gateway@sha256
+    tag: "5b5bd615dfaf15b672a550138e6124815f823c4f424d2d30b13d26794376418f"
+  imagePullSecrets:
+    - name: street-java-pull-secret
+----
+
+Now you have to upgrade the chart.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+helm upgrade street-java helm/street-java
+----
+
+Let's check everything is fine, the next command should show the secrets associated with the default service account for pulling images, our secret should be onw of them.
+
+[.console-input]
+[source,bash, subs="+macros,+attributes"]
+----
+oc get deployment/fruit-gateway -o jsonpath='{.spec.template.spec.imagePullSecrets}' -n {street-java-namespace} | jq .
+----
+
+[#did-it-work]
+== Did it Work?
+
+Alrighty, let's find out it our app still works properly. If you open the next link and pay attention to the `fruit-gateway` deployment.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+{street-java-link}
+----
+
+Or run the next command:
+
+[NOTE]
+====
+{
+  "name": "fruit-gateway",
+  "status": {
+    "checks": [
+      {
+        "name": "fruit-service",
+        "status": "UP"
+      }
+    ],
+    "status": "OPERATIONAL"
+  }
+}
+====
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+curl https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .
+----
+
+You will think... Yes, it's still there, alive and kicking... but the devil is in the details...
+
+Let's have a look to the deployment object, in this cae there shouldn't be any errors.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc get deployment/fruit-gateway -n {street-java-namespace} -o yaml
+----

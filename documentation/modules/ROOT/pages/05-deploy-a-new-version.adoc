@@ -295,10 +295,10 @@ Or run the next command:
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-curl https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/fruits
+curl https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .
 ----
 
-You will think that yes... it's still there alive and kicking... but the devil is in the details...
+You will think... Yes, it's still there, alive and kicking... but the devil is in the details...
 
 Let's have a look to the deployment object:
 
@@ -381,3 +381,10 @@ Use this credentials:
 ----
 https://{quay-server}/repository/{username}/street-java-fruit-gateway
 ----
+
+You should be able to see the lock icon near the top indicating that the `{username}/street-java-fruit-gateway` repository is private.
+
+image:fruit-gateway-repository-private.png[New Repository Private]
+
+Ok, so you need to make your deployment use some credentials to allow it to pull the new image... well, let's get started.
+
