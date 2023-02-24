@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Prepare Cluster :: Street Java on OpenShift</title>
-    <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/02-prepare-cluster.html">
-    <link rel="prev" href="01-setup.html">
-    <link rel="next" href="03-deploy-the-app.html">
+    <title>Good Robot :: Street Java on OpenShift</title>
+    <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/06-good-robot.html">
+    <link rel="prev" href="05-deploy-a-new-version.html">
+    <link rel="next" href="07-checking-cicd-pipelines.html">
     <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
 <link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
@@ -86,18 +86,18 @@
   </li>
 </ul>
   </li>
-  <li class="nav-item is-current-page" data-depth="1">
+  <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
     <a class="nav-link" href="02-prepare-cluster.html">2. Prepare Cluster</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#deploying-core-components">Deploying core components</a>
+    <a class="nav-link" href="02-prepare-cluster.html#deploying-core-components">Deploying core components</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#high-level-tests">High Level Tests</a>
+    <a class="nav-link" href="02-prepare-cluster.html#high-level-tests">High Level Tests</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#checking-quay">Checking Quay</a>
+    <a class="nav-link" href="02-prepare-cluster.html#checking-quay">Checking Quay</a>
   </li>
 </ul>
   </li>
@@ -152,18 +152,18 @@
   </li>
 </ul>
   </li>
-  <li class="nav-item" data-depth="1">
+  <li class="nav-item is-current-page" data-depth="1">
     <button class="nav-item-toggle"></button>
     <a class="nav-link" href="06-good-robot.html">6. Good Robot</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="06-good-robot.html#create-root-account-in-quay">Create Quay Robot Acc.</a>
+    <a class="nav-link" href="#create-root-account-in-quay">Create Quay Robot Acc.</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="06-good-robot.html#create-registry-secret">Create Registry Secret</a>
+    <a class="nav-link" href="#create-registry-secret">Create Registry Secret</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="06-good-robot.html#grant-pull-permissions">Granting Pull Permissions</a>
+    <a class="nav-link" href="#grant-pull-permissions">Granting Pull Permissions</a>
   </li>
 </ul>
   </li>
@@ -267,67 +267,30 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">Street Java on OpenShift</a></li>
-    <li><a href="02-prepare-cluster.html">2. Prepare Cluster</a></li>
+    <li><a href="06-good-robot.html">6. Good Robot</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/02-prepare-cluster.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/06-good-robot.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <article class="doc">
-<h1 class="page">Prepare Cluster</h1>
+<h1 class="page">Good Robot</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section is devoted to prepare the OpenShift cluster, hence something to be done before actually run the proper GitOps lab.</p>
+<p>Well, apparently you have to add credentials somehow to allow pulling an image from a private repository.</p>
 </div>
 <div class="paragraph">
-<p>Everything we do in this section requires that you have fulfilled the <a href="01-setup.html#prerequisite" class="xref page">prerequisites</a> section, that you&#8217;re logged in your OpenShift cluster and you have <code>cluster-admin</code> permissions on it.</p>
+<p>In this chapter you will learn how to create credentials and use them to fix this situation.</p>
 </div>
-<div class="paragraph">
-<p>If you don&#8217;t have an OpenShift cluster and/or you don&#8217;t have <code>cluster-admin</code> permissions on it you could for instance using <a href="https://try.openshift.com">try.openshift.com</a>.</p>
-</div>
-<div class="admonitionblock caution">
+<div class="admonitionblock important">
 <table>
 <tr>
 <td class="icon">
-<i class="fa icon-caution" title="Caution"></i>
+<i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-<div class="paragraph">
-<p><strong>Run this section only if you&#8217;re preparing the lab environment</strong> and as a <code>cluster-admin</code> user. If you just want to run the lab then proceed to the  <a href="03-prepare-repositories.html" class="xref page">next section</a>.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>So if you are not already logged in, please do it now.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc login -u %USERNAME% -p %PASSWORD% --server=https://api.%BASE_SUBDOMAIN%:6443</code></pre>
-</div>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>If the API server you&#8217;re trying to log in uses a self-signed certificate or otherwise non trusted CA you will receive this message</p>
-</div>
-<div class="listingblock console-output">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">The server uses a certificate signed by an unknown authority.
-You can bypass the certificate check, but any data you send to the server could be intercepted by others.
-Use insecure connections? (y/n):</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Type 'y' only if you trust the server!</p>
-</div>
+It&#8217;s a best practice avoid storing secrets in a git repository even if it&#8217;s private. There are several ways to deal with secrets in this kind of scenarios but in this case we&#8217;re going to manage them manually for the sake of simplicity.
 </td>
 </tr>
 </table>
@@ -335,189 +298,296 @@ Use insecure connections? (y/n):</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="deploying-core-components"><a class="anchor" href="#deploying-core-components"></a>Deploying core components</h2>
+<h2 id="create-root-account-in-quay"><a class="anchor" href="#create-root-account-in-quay"></a>Create a Robot Account in Quay</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In order to run this guide we&#8217;re going to need several components, more prominently:</p>
+<p>So here comes the good robot of the title. The suggested approach to use credentials to push/pull images from a system, like in this case, is using a <strong>robot account</strong> instead of using a personal account. Next you will learn to create a <strong>robot account</strong> in Quay.</p>
+</div>
+<div class="paragraph">
+<p>Please copy and paste the following link and open it in a browser, then use this credentials and click on <code>Sign in to Red Hat Quay</code>.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>ArgoCD</strong>, the GitOps engine supported by Red Hat through the <strong>OpenShift GitOps operator</strong></p>
+<p><strong>Username:</strong> %USERNAME%</p>
 </li>
 <li>
-<p><strong>Tekton</strong>, the <em>de facto</em> kubernetes native CICD pipelines system supported by Red Hat through the <strong>OpenShift Pipelines operator</strong></p>
-</li>
-<li>
-<p><strong>Quay</strong>, Red Hat&#8217;s container registry</p>
+<p><strong>Password:</strong> %PASSWORD%</p>
 </li>
 </ul>
-</div>
-<div class="paragraph">
-<p>Let&#8217;s install all of them:</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">until oc apply -k util/bootstrap/; do sleep 2; done</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This command execute <code>oc apply -k &#8230;&#8203;</code> until it&#8217;s done every 2 seconds&#8230;&#8203; this is so because behind scenes some tasks are run asynchronously and in the meantime some errors will be seen as in the next example. The number of errors decreases as components are installed until there are no errors.</p>
-</div>
-<div class="listingblock console-output">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ until oc apply -k util/bootstrap/; do sleep 2; done
-namespace/openshift-storage created
-namespace/quay-system created
-serviceaccount/occli created
-serviceaccount/occli created
-clusterrole.rbac.authorization.k8s.io/gitops-guide-user-role created
-clusterrole.rbac.authorization.k8s.io/gitops-service-account created
-rolebinding.rbac.authorization.k8s.io/occli-permission created
-rolebinding.rbac.authorization.k8s.io/occli-permission created
-clusterrolebinding.rbac.authorization.k8s.io/gitops-guide-user-role-binding created
-clusterrolebinding.rbac.authorization.k8s.io/gitops-service-account created
-job.batch/noobaa-patch created
-job.batch/quay-deploy created
-operatorgroup.operators.coreos.com/openshift-storage-og created
-subscription.operators.coreos.com/openshift-gitops-operator created
-subscription.operators.coreos.com/openshift-pipelines-operator created
-subscription.operators.coreos.com/quay-operator created
-subscription.operators.coreos.com/odf-operator created
-route.route.openshift.io/s3-insecure created
-group.user.openshift.io/gitops-guide-users created
-unable to recognize "util/bootstrap/": no matches for kind "AppProject" in version "argoproj.io/v1alpha1"
-unable to recognize "util/bootstrap/": no matches for kind "AppProject" in version "argoproj.io/v1alpha1"
-unable to recognize "util/bootstrap/": no matches for kind "ArgoCD" in version "argoproj.io/v1alpha1"
-unable to recognize "util/bootstrap/": no matches for kind "BackingStore" in version "noobaa.io/v1alpha1"
-unable to recognize "util/bootstrap/": no matches for kind "NooBaa" in version "noobaa.io/v1alpha1"
-unable to recognize "util/bootstrap/": no matches for kind "ObjectBucketClaim" in version "objectbucket.io/v1alpha1"</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="high-level-tests"><a class="anchor" href="#high-level-tests"></a>High level tests</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Let&#8217;s open the OpenShift Web Console and run some validation tests.</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://console-openshift-console.apps.%BASE_SUBDOMAIN%</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>You should see something like.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-You can skip the tour or run it if you want and have time.
-</td>
-</tr>
-</table>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/openshift-console.png" alt="OpenShift Web Console">
-</div>
-</div>
-<div class="paragraph">
-<p>Now, take a look to the next picture, there are two arrows pointing to:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>The ArgoCD web console link</p>
-</li>
-<li>
-<p>The Pipelines section</p>
-</li>
-</ul>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/argocd-pipelines-test-1.png" alt="High level tests 1">
-</div>
-</div>
-<div class="paragraph">
-<p>You can see both then we&#8217;re on the good way.</p>
-</div>
-<div class="paragraph">
-<p>Open the ArgoCD web console then click on the "LOG IN VIA OPENSHIFT" button on the upper right corner and use your credentials:</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-The first time you successfully log in you&#8217;ll see an Authorize Access request, leave it "as is"  and click on the button that says "Allow selected permissions"
-</td>
-</tr>
-</table>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/argocd-login.png" alt="ArgoCD Log In">
-</div>
-</div>
-<div class="paragraph">
-<p>Finally if all went well you should land in the ArgoCD console and see this.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/argocd-console.png" alt="ArgoCD Console">
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="checking-quay"><a class="anchor" href="#checking-quay"></a>Checking Quay</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>First of, open the OpenShift console and go to the topology view of namespace <code>quay-system</code>, use the following link.</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://console-openshift-console.apps.%BASE_SUBDOMAIN%/k8s/cluster/projects/quay-system/workloads?view=graph</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>You should see something similar to this:</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-topology.png" alt="Quay Topology">
-</div>
-</div>
-<div class="paragraph">
-<p>Please open Quay Console in another tab or browser window.</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%</code></pre>
 </div>
 </div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/quay-installed-login-userX.png" alt="Quay Login">
+</div>
+</div>
 <div class="paragraph">
-<p>You should see something like this:</p>
+<p>Now click on <code>userX</code> to jump to the user details section.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="_images/quay-installed-login.png" alt="Quay Login">
+<img src="_images/quay-installed-repositories-userX.png" alt="Go to Repositories">
+</div>
+</div>
+<div class="paragraph">
+<p>Now go to the robot accounts area by clicking on the robot icon as in the next picture.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/quay-installed-go-to-robot-accounts-userX.png" alt="Go to Repositories">
+</div>
+</div>
+<div class="paragraph">
+<p>Now click on the <code>Create Robot Account</code> button.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/quay-installed-create-robot-account-1-userX.png" alt="Go to Repositories">
+</div>
+</div>
+<div class="paragraph">
+<p>Now please use the following data and click on the <code>Create robot Account</code> button:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Name:</strong> cicd</p>
+</li>
+<li>
+<p><strong>Description:</strong> CICD robot account</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/quay-installed-create-robot-account-2-userX.png" alt="Go to Repositories">
+</div>
+</div>
+<div class="paragraph">
+<p>We have to grant permissions to our robot account, expand the <code>PERMISSIONS</code> list box and select <code>Read</code>. Then click on <code>Close</code>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/quay-installed-create-robot-account-3-userX.png" alt="Go to Repositories">
+</div>
+</div>
+<div class="paragraph">
+<p>Well, now you have a robot account you can use to pull the image you need.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Should you need to pull another image you will have to add new permissions to your robot account.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="create-registry-secret"><a class="anchor" href="#create-registry-secret"></a>Create Registry Secret</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Ok, so you need to make your deployment use some credentials to allow it to pull the new image&#8230;&#8203; well, let&#8217;s get started.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This is not the only way to do it, you could add credentials directly to the Deployment&#8230;&#8203;
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The next set of commands will ask you for the <strong>username</strong> and <strong>password</strong> of the container registry account you already had or created above in this chapter or in your own registry.</p>
+</div>
+<div class="paragraph">
+<p>If you have followed all the instructions then copy and paste the next command and run it. If you have chosen to use your own registry, change accordingly.</p>
+</div>
+<div class="paragraph">
+<p><strong>USERNAME</strong></p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export CONTAINER_REGISTRY_USERNAME="%USERNAME%+cicd"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>TOKEN</strong></p>
+</div>
+<div class="paragraph">
+<p>Please use the next link to open the details of your robot account.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/user/%USERNAME%?tab=robots</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then click on the <code>%USERNAME%-cicd</code> link, keep this link open you will have to copy the token.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/quay-installed-view-credentials-robot-account-userX.png" alt="Robot Account Credentials">
+</div>
+</div>
+<div class="paragraph">
+<p>Now you have to run the following command, then go back to your browser and copy the token as in the image below.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">echo "CONTAINER_REGISTRY_PASSWORD: " &amp;&amp; read -s CONTAINER_REGISTRY_PASSWORD</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/quay-installed-copy-credentials-robot-account-userX.png" alt="Robot Account Credentials">
+</div>
+</div>
+<div class="paragraph">
+<p>Now that we have gather all the needed information let&#8217;s create the secret, named <code>street-java-pull-secret</code>.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">if [ -z "${CONTAINER_REGISTRY_USERNAME}" ] &amp;&amp; [ -z "${CONTAINER_REGISTRY_PASSWORD}" ]; then
+    echo "You should provide a value for CONTAINER_REGISTRY_USERNAME and CONTAINER_REGISTRY_PASSWORD"
+else
+oc create -n street-java-%USERNAME% secret docker-registry street-java-pull-secret \
+  --docker-server=https://$CONTAINER_REGISTRY_SERVER \
+  --docker-username=$CONTAINER_REGISTRY_USERNAME \
+  --docker-password=$CONTAINER_REGISTRY_PASSWORD
+fi</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="grant-pull-permissions"><a class="anchor" href="#grant-pull-permissions"></a>Granting Pull Permissions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You have created the secret with the robot account credentials, but you haven&#8217;t used that secret anywhere yet.</p>
+</div>
+<div class="paragraph">
+<p>The idea is to update the deployment object so that our secret can be used to pull images from our registry.</p>
+</div>
+<div class="paragraph">
+<p>In any <code>Deployment</code> object this means to add an <code>imagePullSecrets</code> array to <code>spec&#8594;template&#8594;spec</code> but instead of doing it manually we&#8217;re going to do it using a value in our helm chart as we did before with the hash of the new image. So, please open <code>helm/street-java/values.yaml</code>; you should see something like this.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">fruit-gateway:
+  enabled: true
+  image:
+    repository: {quay-server}/{username}/street-java-fruit-gateway@sha256
+    tag: "5b5bd615dfaf15b672a550138e6124815f823c4f424d2d30b13d26794376418f"
+  imagePullSecrets: []</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And change it to look like this. Only change the</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">fruit-gateway:
+  enabled: true
+  image:
+    repository: myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/%USERNAME%/street-java-fruit-gateway@sha256
+    tag: "5b5bd615dfaf15b672a550138e6124815f823c4f424d2d30b13d26794376418f"
+  imagePullSecrets:
+    - name: street-java-pull-secret</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now you have to upgrade the chart.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm upgrade street-java helm/street-java</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s check everything is fine, the next command should show the secrets associated with the default service account for pulling images, our secret should be onw of them.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get deployment/fruit-gateway -o jsonpath='{.spec.template.spec.imagePullSecrets}' -n street-java-%USERNAME% | jq .</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="did-it-work"><a class="anchor" href="#did-it-work"></a>Did it Work?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Alrighty, let&#8217;s find out it our app still works properly. If you open the next link and pay attention to the <code>fruit-gateway</code> deployment.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">fruit-gateway-street-java-%USERNAME%.apps.%BASE_SUBDOMAIN%</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or run the next command:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>{
+  "name": "fruit-gateway",
+  "status": {
+    "checks": [
+      {
+        "name": "fruit-service",
+        "status": "UP"
+      }
+    ],
+    "status": "OPERATIONAL"
+  }
+}</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You will think&#8230;&#8203; Yes, it&#8217;s still there, alive and kicking&#8230;&#8203; but the devil is in the details&#8230;&#8203;</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s have a look to the deployment object, in this cae there shouldn&#8217;t be any errors.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc get deployment/fruit-gateway -n street-java-%USERNAME% -o yaml</code></pre>
 </div>
 </div>
 </div>
 </div>
 <nav class="pagination">
-  <span class="prev"><a href="01-setup.html" class="query-params-link">1. Setup</a></span>
-  <span class="next"><a href="03-deploy-the-app.html" class="query-params-link">3. Deploy The App</a></span>
+  <span class="prev"><a href="05-deploy-a-new-version.html" class="query-params-link">5. Deploy New Version</a></span>
+  <span class="next"><a href="07-checking-cicd-pipelines.html" class="query-params-link">7. Checking CICD Pipelines</a></span>
 </nav>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">

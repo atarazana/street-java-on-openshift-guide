@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Deploy CICD Pipelines With GitOps :: Street Java on OpenShift</title>
     <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/06-deploy-cicd-pipelines-with-gitops.html">
-    <link rel="prev" href="05-deploy-a-new-version.html">
-    <link rel="next" href="07-checking-cicd-pipelines.html">
     <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
 <link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
@@ -152,24 +150,18 @@
   </li>
 </ul>
   </li>
-  <li class="nav-item is-current-page" data-depth="1">
+  <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="06-deploy-cicd-pipelines-with-gitops.html">6. Deploy CICD Pipelines</a>
+    <a class="nav-link" href="06-good-robot.html">6. Good Robot</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#create-root-account-in-quay">Create Quay Robot Acc.</a>
+    <a class="nav-link" href="06-good-robot.html#create-root-account-in-quay">Create Quay Robot Acc.</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#deploying-cicd-pipelines">Deploying CICD Pipelines</a>
+    <a class="nav-link" href="06-good-robot.html#create-registry-secret">Create Registry Secret</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#create-git-secret">Create Git Secret</a>
-  </li>
-  <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#create-registry-secret">Create Registry Secret</a>
-  </li>
-  <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#grant-pull-permissions">Granting Pull Permissions</a>
+    <a class="nav-link" href="06-good-robot.html#grant-pull-permissions">Granting Pull Permissions</a>
   </li>
 </ul>
   </li>
@@ -273,7 +265,7 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">Street Java on OpenShift</a></li>
-    <li><a href="06-deploy-cicd-pipelines-with-gitops.html">6. Deploy CICD Pipelines</a></li>
+    <li><a href="06-deploy-cicd-pipelines-with-gitops.html">Deploy CICD Pipelines With GitOps</a></li>
   </ul>
 </nav>
   <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/06-deploy-cicd-pipelines-with-gitops.adoc">Edit this Page</a></div>
@@ -327,67 +319,11 @@ It&#8217;s a best practice avoid storing secrets in a git repository even if it&
 </div>
 </div>
 <div class="paragraph">
-<p>Now click on <code>UserX</code> as in the next picture to jump to the repositories section.</p>
+<p>Now click on <code>userX</code> to jump to the user details section.</p>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="_images/quay-installed-repositories-userX.png" alt="Go to Repositories">
-</div>
-</div>
-<div class="paragraph">
-<p>You have to create a repository for <strong>events</strong> and another one for <strong>gateway</strong>. Let&#8217;s start with <code>gramola-events</code>, please click on <code>creating a new repository</code>.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-create-repository-1-userX.png" alt="Create Repository">
-</div>
-</div>
-<div class="paragraph">
-<p>Type in <code>gramola-events</code> as the name of the repository and click on <code>Create Private Repository</code>.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-create-repository-2-userX.png" alt="Create Repository">
-</div>
-</div>
-<div class="paragraph">
-<p>So, our private repository for <strong>events</strong> has been created, please click on <code>&#8592; Repositories</code> on the upper left corner to create another repository.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-create-repository-3-userX.png" alt="Create Repository">
-</div>
-</div>
-<div class="paragraph">
-<p>To create the next repository click on  <code>+ Create New Repository</code>.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-create-repository-4-userX.png" alt="Create Repository">
-</div>
-</div>
-<div class="paragraph">
-<p>Type in <code>gramola-gateway</code> as the name of the repository and click on <code>Create Private Repository</code>.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-create-repository-5-userX.png" alt="Create Repository">
-</div>
-</div>
-<div class="paragraph">
-<p>Ok, we&#8217;re done creating repositories let&#8217;s go back to the repositories area, please click on <code>&#8592; Repositories</code> on the upper left corner.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-create-repository-6-userX.png" alt="Create Repository">
-</div>
-</div>
-<div class="paragraph">
-<p>Let&#8217;s go to the user details area.</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-create-repository-7-userX.png" alt="Repositories">
 </div>
 </div>
 <div class="paragraph">
@@ -407,7 +343,7 @@ It&#8217;s a best practice avoid storing secrets in a git repository even if it&
 </div>
 </div>
 <div class="paragraph">
-<p>Now please use the following date and click on the <code>Create robot Account</code> button:</p>
+<p>Now please use the following data and click on the <code>Create robot Account</code> button:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -425,7 +361,7 @@ It&#8217;s a best practice avoid storing secrets in a git repository even if it&
 </div>
 </div>
 <div class="paragraph">
-<p>We have our robot account but no permissions have been granted to it, please click on <code>Set Repository Permissions</code>.</p>
+<p>We have to grant permissions to our robot account, expand the <code>PERMISSIONS</code> list box and select <code>Read</code>. Then click on <code>Close</code>.</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -433,12 +369,19 @@ It&#8217;s a best practice avoid storing secrets in a git repository even if it&
 </div>
 </div>
 <div class="paragraph">
-<p>Set permissions to <code>Write</code> on both repositories, then click on <code>Update permissions</code>.</p>
+<p>Well, now you have a robot account you can use to pull the image you need.</p>
 </div>
-<div class="imageblock">
-<div class="content">
-<img src="_images/quay-installed-create-robot-account-4-userX.png" alt="Go to Repositories">
-</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Should you need to pull another image you will have to add new permissions to your robot account.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -798,10 +741,6 @@ oc login -u %USERNAME% -p %PASSWORD% --server=https://api.%BASE_SUBDOMAIN%:6443<
 </div>
 </div>
 </div>
-<nav class="pagination">
-  <span class="prev"><a href="05-deploy-a-new-version.html" class="query-params-link">5. Deploy New Version</a></span>
-  <span class="next"><a href="07-checking-cicd-pipelines.html" class="query-params-link">7. Checking CICD Pipelines</a></span>
-</nav>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
