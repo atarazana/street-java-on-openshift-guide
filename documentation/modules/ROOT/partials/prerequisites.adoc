@@ -5,12 +5,17 @@ Please have them installed and configured before you get started with any of the
 
 [cols="4*^,4*.",options="header,+attributes"]
 |===
-|**Tool**|**macOS**|**Fedora**|**windows**
+|**Tool**|**macOS**|**Fedora**|**Windows**
 
-| `Git`
-| https://git-scm.com/download/mac[Download]
-| https://git-scm.com/download/linux[Download]
-| https://git-scm.com/download/win[Download]
+| `jdk {jdk-version}`
+| https://adoptium.net/temurin/releases/[Download]
+| https://adoptium.net/temurin/releases/[Download]
+| https://adoptium.net/temurin/releases/[Download]
+
+| `maven {maven-version}`
+| https://dlcdn.apache.org/maven/maven-3/{maven-version}/binaries/apache-maven-{maven-version}-bin.tar.gz[Download]
+| https://dlcdn.apache.org/maven/maven-3/{maven-version}/binaries/apache-maven-{maven-version}-bin.tar.gz[Download]
+| https://dlcdn.apache.org/maven/maven-3/{maven-version}/binaries/apache-maven-{maven-version}-bin.tar.gz[Download]
 
 | `oc {oc-version}`
 | https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-{oc-version}/openshift-client-mac.tar.gz[Download]
@@ -22,19 +27,24 @@ Please have them installed and configured before you get started with any of the
 | https://get.helm.sh/helm-{helm-version}-linux-amd64.tar.gz[Download]
 | https://get.helm.sh/helm-{helm-version}-windows-amd64.tar.gz[Download]
 
-| `argocd {argocd-version}`
-| https://github.com/argoproj/argo-cd/releases/download/{argocd-version}/argocd-darwin-amd64[Download]
-| https://github.com/argoproj/argo-cd/releases/download/{argocd-version}/argocd-linux-amd64[Download]
-| https://github.com/argoproj/argo-cd/releases/download/{argocd-version}/argocd-windows-amd64.exe[Download]
-
-| https://github.com/mikefarah/yq[yq {yq-version}]
-| https://github.com/mikefarah/yq/releases/download/v{yq-version}/yq_darwin_amd64[Download]
-| https://github.com/mikefarah/yq/releases/download/v{yq-version}/yq_linux_amd64[Download]
-| https://github.com/mikefarah/yq/releases/download/v{yq-version}/yq_windows_amd64.exe[Download]
-
-| https://github.com/stedolan/jq[jq v1.6.0]
+| https://github.com/stedolan/jq[jq {jq-version}]
 | https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64[Download]
 | https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64[Download]
 | https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe[Download]
+
+| `Git`
+| https://git-scm.com/download/mac[Download]
+| https://git-scm.com/download/linux[Download]
+| https://git-scm.com/download/win[Download]
+
+| `skopeo`
+| https://github.com/containers/skopeo/blob/main/install.md[Install]
+| https://github.com/containers/skopeo/blob/main/install.md[Install]
+| https://github.com/containers/skopeo/blob/main/install.md[Install]
+
+| `podman`
+| https://podman.io/getting-started/installation[Install]
+| https://podman.io/getting-started/installation[Install]
+| https://podman.io/getting-started/installation[Install]
 
 |===

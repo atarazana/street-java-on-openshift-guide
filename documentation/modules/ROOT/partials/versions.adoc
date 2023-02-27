@@ -1,5 +1,8 @@
 :kubernetes-version: v1.23.6
 :oc-version: 4.10
 :argocd-version: v2.1.3
+:jq-version: 1.6
 :yq-version: 4.19.1
 :helm-version: v3.11.1
+:maven-version: 3.6.3
+:jdk-version: 17.0.6_10
