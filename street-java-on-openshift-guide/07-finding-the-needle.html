@@ -178,13 +178,13 @@
   </li>
   <li class="nav-item is-current-page" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="07-finding-the-needle.html">7. Finding the needle</a>
+    <a class="nav-link" href="07-finding-the-needle.html">7. Finding the Needle</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#overview">Overview</a>
+    <a class="nav-link" href="#the-needle">The Needle</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#tekton-triggers">Tekton Triggers</a>
+    <a class="nav-link" href="#the-haystack">The Haystack</a>
   </li>
 </ul>
   </li>
@@ -276,7 +276,7 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">Street Java on OpenShift</a></li>
-    <li><a href="07-finding-the-needle.html">7. Finding the needle</a></li>
+    <li><a href="07-finding-the-needle.html">7. Finding the Needle</a></li>
   </ul>
 </nav>
   <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/07-finding-the-needle.adoc">Edit this Page</a></div>
@@ -335,10 +335,10 @@ HTTP/1.1 500 Internal Server Error</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="the-heystack"><a class="anchor" href="#the-heystack"></a>The Heystack</h2>
+<h2 id="the-haystack"><a class="anchor" href="#the-haystack"></a>The Haystack</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>There are several ways to look for the trace of this error, the needle:</p>
+<p>There are several ways to look for the trace of this error, the needle, in OpenShift, the haystack:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -353,20 +353,24 @@ HTTP/1.1 500 Internal Server Error</code></pre>
 </li>
 </ul>
 </div>
+<div class="sect2">
+<h3 id="oc-logs"><a class="anchor" href="#oc-logs"></a>Using oc logs</h3>
 <div class="paragraph">
-<p>Let&#8217;s start from the command line, please run this command.</p>
+<p>Let&#8217;s start from the command line, please run this command:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc logs deployments/fruit-gateway | grep ERROR
-oc logs deployments/fruit-gateway -n street-java-%USERNAME% | grep -B20 ERROR | grep -A20 com.redhat.fruit</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc logs deployments/fruit-gateway -n street-java-%USERNAME% | grep -B20 -e ".*ERROR.*c.*r.*fruit.*"</code></pre>
 </div>
 </div>
 <div class="listingblock console-output">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">--
-15:03:43 INFO  traceId=909358a3b04bb801570115e9b15d2154, parentId=, spanId=fcb7f450dd08981b, sampled=true [co.re.fr.ga.re.RequestHeaderFactory] (executor-thread-47) span: ImmutableSpanContext{traceId=909358a3b04bb801570115e9b15d2154, spanId=fcb7f450dd08981b, traceFlags=01, traceState=ArrayBasedTraceState{entries=[]}, remote=false, valid=true}
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">15:03:44 ERROR traceId=973211f9c982264465cf427cfb37fccd, parentId=, spanId=3d65221ef35793b5, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search <i class="conum" data-value="1"></i><b>(1)</b>
+15:03:44 ERROR traceId=973211f9c982264465cf427cfb37fccd, parentId=, spanId=3d65221ef35793b5, sampled=true [io.qu.ve.ht.ru.QuarkusErrorHandler] (executor-thread-47) HTTP Request to /api/config failed, error id: ca2a1960-ba0c-42ed-8c51-37918deae143-11: org.jboss.resteasy.spi.UnhandledException: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
 --
+        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+        at java.base/java.lang.Thread.run(Thread.java:833)
+Caused by: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
         at com.redhat.fruit.gateway.ApiImpl.configGet(ApiImpl.java:61) <i class="conum" data-value="2"></i><b>(2)</b>
         at jdk.internal.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
         at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -384,7 +388,7 @@ oc logs deployments/fruit-gateway -n street-java-%USERNAME% | grep -B20 ERROR | 
         at org.jboss.resteasy.core.SynchronousDispatcher.invoke(SynchronousDispatcher.java:492)
         ... 15 more
 
-15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search <i class="conum" data-value="1"></i><b>(1)</b>
+15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search
 15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [io.qu.ve.ht.ru.QuarkusErrorHandler] (executor-thread-47) HTTP Request to /api/config failed, error id: ca2a1960-ba0c-42ed-8c51-37918deae143-12: org.jboss.resteasy.spi.UnhandledException: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search</code></pre>
 </div>
 </div>
@@ -392,13 +396,49 @@ oc logs deployments/fruit-gateway -n street-java-%USERNAME% | grep -B20 ERROR | 
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>This trace belongs to a class from our service <code>fruit-service</code></td>
+<td>You can see the line where the error happens</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>You can see the line where the error happens</td>
+<td>This trace belongs to a class from our service <code>fruit-service</code></td>
 </tr>
 </table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="web-console"><a class="anchor" href="#web-console"></a>Using OpenShift web console</h3>
+<div class="paragraph">
+<p>Open the next link:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://console-openshift-console.apps.%BASE_SUBDOMAIN%/k8s/ns/street-java-%USERNAME%/deployments/fruit-gateway/pods</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then click on <strong>Pods</strong>:</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="_images/the-haystack-web-console-1.png" alt="alt"></span></p>
+</div>
+<div class="paragraph">
+<p>Now on <strong>Logs</strong>:</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="_images/the-haystack-web-console-2.png" alt="alt"></span></p>
+</div>
+<div class="paragraph">
+<p>Pay attention to the line pointed with the red arrow, the same we found before using <code>oc logs</code>.</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="_images/the-haystack-web-console-3.png" alt="alt"></span></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="kibana"><a class="anchor" href="#kibana"></a>Using Kibana</h3>
+<div class="paragraph">
+<p>Before we actually use kibana we have to do some work&#8230;&#8203; index pattern.</p>
+</div>
 </div>
 </div>
 </div>

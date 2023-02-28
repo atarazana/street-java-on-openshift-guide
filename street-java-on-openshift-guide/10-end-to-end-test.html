@@ -177,13 +177,13 @@
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="07-finding-the-needle.html">7. Finding the needle</a>
+    <a class="nav-link" href="07-finding-the-needle.html">7. Finding the Needle</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="07-finding-the-needle.html#overview">Overview</a>
+    <a class="nav-link" href="07-finding-the-needle.html#the-needle">The Needle</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="07-finding-the-needle.html#tekton-triggers">Tekton Triggers</a>
+    <a class="nav-link" href="07-finding-the-needle.html#the-haystack">The Haystack</a>
   </li>
 </ul>
   </li>
@@ -292,9 +292,9 @@
 <div class="paragraph">
 <p>The next diagram summarizes the end to end test you are going to run. As you can see, you will make a change to the code in the <em>Events API</em> (<strong>gramola-events</strong>) which, via a webhook, will trigger the CI pipeline and hence the promotion of code.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/end-to-end-pipeline-1.png" alt="End to End Pipeline Test">
+<img src="end-to-end-pipeline-1.png" alt="End to End Pipeline Test">
 </div>
 </div>
 <div class="paragraph">
@@ -385,9 +385,9 @@
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/gramola-gateway-ui-1.png" alt="Gateway UI">
+<img src="gramola-gateway-ui-1.png" alt="Gateway UI">
 </div>
 </div>
 </div>
@@ -409,9 +409,9 @@
 <div class="paragraph">
 <p>You should land in the <code>gramola-events</code> repository main page. Sign in by using the <strong>Sign in</strong> link on the upper right corner (red rectangle).</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-1-0.png" alt="gramola-events repository">
+<img src="demo-step-1-0.png" alt="gramola-events repository">
 </div>
 </div>
 <div class="paragraph">
@@ -427,33 +427,33 @@
 </li>
 </ul>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-1-1.png" alt="gramola-events sign in">
+<img src="demo-step-1-1.png" alt="gramola-events sign in">
 </div>
 </div>
 <div class="paragraph">
 <p>Navigate to <code>src/main/resources/application.properties</code> then click on the pencil icon to edit the document directly.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-1-2.png" alt="Navigate to application.properties">
+<img src="demo-step-1-2.png" alt="Navigate to application.properties">
 </div>
 </div>
 <div class="paragraph">
 <p>Modify the value of property <code>info.name</code> add <strong>%USERNAME%</strong> as in the next picture so that you can later confirm the change has been promoted.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-1-3.png" alt="Modify property info.name">
+<img src="demo-step-1-3.png" alt="Modify property info.name">
 </div>
 </div>
 <div class="paragraph">
 <p>Commit changes, scroll down, add a commit message and click on the <strong>Commit changes</strong> button.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-1-4.png" alt="Commit changes">
+<img src="demo-step-1-4.png" alt="Commit changes">
 </div>
 </div>
 </div>
@@ -486,17 +486,17 @@
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-1.png" alt="CI Pipeline">
+<img src="demo-step-2-1.png" alt="CI Pipeline">
 </div>
 </div>
 <div class="paragraph">
 <p>Click on the <strong>PLR</strong> link (red rectangle on the left), eventually you&#8217;ll see something like this. As you can see this is the representation of the pipeline including the status (in this case all green) of the tasks and also if any of them were skipped (grayed out).</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-2.png" alt="CI Pipeline Run">
+<img src="demo-step-2-2.png" alt="CI Pipeline Run">
 </div>
 </div>
 <div class="paragraph">
@@ -597,9 +597,9 @@ If you click on the <code>download</code> icon and then choose <code>Docker Pull
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-3.png" alt="New Image">
+<img src="demo-step-2-3.png" alt="New Image">
 </div>
 </div>
 <div class="paragraph">
@@ -616,17 +616,17 @@ If you click on the <code>download</code> icon and then choose <code>Docker Pull
 <div class="paragraph">
 <p>You should see something like this, please click on the open PR.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-4.png" alt="Pull Requests">
+<img src="demo-step-2-4.png" alt="Pull Requests">
 </div>
 </div>
 <div class="paragraph">
 <p>In the body of the PR there&#8217;s information that helps the person who is to approve the PR that also will be used by the CD pipeline which should be triggered once the PR has been merged.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-5.png" alt="Open PR">
+<img src="demo-step-2-5.png" alt="Open PR">
 </div>
 </div>
 <div class="paragraph">
@@ -644,9 +644,9 @@ You should see changes made to file <code>./events-deployment/overlays/dev/kusto
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-6.png" alt="Files changed">
+<img src="demo-step-2-6.png" alt="Files changed">
 </div>
 </div>
 <div class="paragraph">
@@ -665,9 +665,9 @@ You should see changes made to file <code>./events-deployment/overlays/dev/kusto
 <div class="paragraph">
 <p>Well, it&#8217;s time to continue where we left it, so go back to the PR and click on the <code>Create Merge Commit</code> then tick the <code>Delete Branch</code> check-box (we wont need that branch anymore) and click again on <code>Create Merge Commit</code>.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-7.png" alt="Create Merge Commit">
+<img src="demo-step-2-7.png" alt="Create Merge Commit">
 </div>
 </div>
 </div>
@@ -696,9 +696,9 @@ As you have done previously you can click on the <strong>PLR</strong> object to 
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-8.png" alt="CD Pipeline Running">
+<img src="demo-step-2-8.png" alt="CD Pipeline Running">
 </div>
 </div>
 <div class="paragraph">
@@ -723,9 +723,9 @@ As you have done previously you can click on the <strong>PLR</strong> object to 
 </li>
 </ul>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-9.png" alt="CD Pipeline Details">
+<img src="demo-step-2-9.png" alt="CD Pipeline Details">
 </div>
 </div>
 </div>
@@ -751,9 +751,9 @@ If you don&#8217;t hurry you may miss the syncing process&#8230;&#8203; if that 
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-10.png" alt="CD Pipeline Details">
+<img src="demo-step-2-10.png" alt="CD Pipeline Details">
 </div>
 </div>
 </div>
@@ -765,9 +765,9 @@ If you don&#8217;t hurry you may miss the syncing process&#8230;&#8203; if that 
 <div class="paragraph">
 <p>You should see this&#8230;&#8203; if you hurry!</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-11.png" alt="CD Pipeline Details">
+<img src="demo-step-2-11.png" alt="CD Pipeline Details">
 </div>
 </div>
 </div>
@@ -784,9 +784,9 @@ If you don&#8217;t hurry you may miss the syncing process&#8230;&#8203; if that 
 <div class="paragraph">
 <p>If you remember you changed the value of <code>info.name</code> in the <code>application.properties</code> file of <code>Events</code> so, if it all went well, you should see a different service name for the backend service <code>Events</code> as in the next picture.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-2-12.png" alt="CD Pipeline Details">
+<img src="demo-step-2-12.png" alt="CD Pipeline Details">
 </div>
 </div>
 <div class="paragraph">
@@ -799,7 +799,7 @@ If you don&#8217;t hurry you may miss the syncing process&#8230;&#8203; if that 
 <h2 id="running-cd-pipeline-test"><a class="anchor" href="#running-cd-pipeline-test"></a>Ⓔ Run the CD pipeline (<code>test</code>)</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This time we&#8217;re going to do this a bit faster and with less talking. This chapter is essentially the same as the previous one, but if you have access to an additional cluster and you have run section <a href="04-prepare-argocd.html#register-additional-clusters" class="xref page">Register Additional Clusters</a>, then you will see how <strong>Gramola</strong> is also updated in the additional cluster.</p>
+<p>This time we&#8217;re going to do this a bit faster and with less talking. This chapter is essentially the same as the previous one, but if you have access to an additional cluster and you have run section <a href="#04-prepare-argocd.adoc#register-additional-clusters" class="xref unresolved">Register Additional Clusters</a>, then you will see how <strong>Gramola</strong> is also updated in the additional cluster.</p>
 </div>
 <div class="sect2">
 <h3 id="approving-pr-test"><a class="anchor" href="#approving-pr-test"></a>Approve PR</h3>
@@ -814,17 +814,17 @@ If you don&#8217;t hurry you may miss the syncing process&#8230;&#8203; if that 
 <div class="paragraph">
 <p>Please click on the open PR.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-1.png" alt="Pull Requests">
+<img src="demo-step-3-1.png" alt="Pull Requests">
 </div>
 </div>
 <div class="paragraph">
 <p>Have a look to the body of the PR, this time the overlay is <code>test</code>, other than the content is the same as before.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-2.png" alt="Open PR">
+<img src="demo-step-3-2.png" alt="Open PR">
 </div>
 </div>
 <div class="paragraph">
@@ -842,9 +842,9 @@ You should see changes made to file <code>./events-deployment/overlays/test/kust
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-3.png" alt="Files changed">
+<img src="demo-step-3-3.png" alt="Files changed">
 </div>
 </div>
 <div class="paragraph">
@@ -853,9 +853,9 @@ You should see changes made to file <code>./events-deployment/overlays/test/kust
 <div class="paragraph">
 <p>Go back to the PR and click on the <code>Create Merge Commit</code> then tick the <code>Delete Branch</code> check-box (we wont need that branch anymore) and click again on <code>Create Merge Commit</code>.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-4.png" alt="Create Merge Commit">
+<img src="demo-step-3-4.png" alt="Create Merge Commit">
 </div>
 </div>
 </div>
@@ -881,17 +881,17 @@ As you have done previously you can click on the <strong>PLR</strong> object to 
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-5.png" alt="CD Pipeline Running">
+<img src="demo-step-3-5.png" alt="CD Pipeline Running">
 </div>
 </div>
 <div class="paragraph">
 <p>Have a look at the pipeline details.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-6.png" alt="CD Pipeline Details">
+<img src="demo-step-3-6.png" alt="CD Pipeline Details">
 </div>
 </div>
 <div class="admonitionblock tip">
@@ -971,9 +971,9 @@ Remember! You will see the <code>test-cloud</code> version only if you have setu
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-7.png" alt="CD Pipeline Details">
+<img src="demo-step-3-7.png" alt="CD Pipeline Details">
 </div>
 </div>
 </div>
@@ -1009,9 +1009,9 @@ Remember! You will see the <code>test-cloud</code> version only if you have setu
 </tr>
 </table>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-8.png" alt="Gramola in test">
+<img src="demo-step-3-8.png" alt="Gramola in test">
 </div>
 </div>
 </div>
@@ -1036,9 +1036,9 @@ Remember! You will see the <code>test-cloud</code> version only if you have setu
 <div class="paragraph">
 <p>If you remember you changed the value of <code>info.name</code> in the <code>application.properties</code> file of <code>Events</code> so, if it all went well, you should see a different service name for the backend service <code>Events</code> as in the next picture.</p>
 </div>
-<div class="imageblock">
+<div class="imageblock unresolved">
 <div class="content">
-<img src="_images/demo-step-3-9.png" alt="CD Pipeline Details">
+<img src="demo-step-3-9.png" alt="CD Pipeline Details">
 </div>
 </div>
 </div>
