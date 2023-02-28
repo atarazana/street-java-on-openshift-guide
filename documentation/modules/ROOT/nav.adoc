@@ -36,9 +36,9 @@ endif::[]
 ** xref:06-good-robot.adoc#create-registry-secret[Create Registry Secret]
 ** xref:06-good-robot.adoc#grant-pull-permissions[Granting Pull Permissions] 
 
-* xref:07-finding-the-needle.adoc[7. Finding the needle]
-** xref:07-finding-the-needle.adoc#overview[Overview]
-** xref:07-finding-the-needle.adoc#tekton-triggers[Tekton Triggers]
+* xref:07-finding-the-needle.adoc[7. Finding the Needle]
+** xref:07-finding-the-needle.adoc#the-needle[The Needle]
+** xref:07-finding-the-needle.adoc#the-haystack[The Haystack]
 
 * xref:08-create-pipeline-webhooks.adoc[8. Create Pipelines Webhooks]
 ** xref:08-create-pipeline-webhooks.adoc#pipeline-webhooks[Pipelines Webhooks]

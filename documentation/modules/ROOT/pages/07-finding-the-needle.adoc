@@ -35,30 +35,35 @@ HTTP/1.1 500 Internal Server Error
 
 But where is this error happening? How can I find out in an OpenShift cluster?
 
-[#the-heystack]
-== The Heystack
+[#the-haystack]
+== The Haystack
 
-There are several ways to look for the trace of this error, the needle:
+There are several ways to look for the trace of this error, the needle, in OpenShift, the haystack:
 
 - By using `oc logs` from the command line to stream the logs from a pod
 - By looking at the logs of a pod in the OpenShift web console
 - By using Kibana console
 
-Let's start from the command line, please run this command.
+[#oc-logs]
+=== Using oc logs
+
+Let's start from the command line, please run this command:
 
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-oc logs deployments/fruit-gateway | grep ERROR
-oc logs deployments/fruit-gateway -n {street-java-namespace} | grep -B20 ERROR | grep -A20 com.redhat.fruit
+oc logs deployments/fruit-gateway -n {street-java-namespace} | grep -B20 -e ".*ERROR.*c.*r.*fruit.*"
 ----
 
 [.console-output]
 [source,sh, subs="+macros,+attributes"]
 ----
+15:03:44 ERROR traceId=973211f9c982264465cf427cfb37fccd, parentId=, spanId=3d65221ef35793b5, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search <1>
+15:03:44 ERROR traceId=973211f9c982264465cf427cfb37fccd, parentId=, spanId=3d65221ef35793b5, sampled=true [io.qu.ve.ht.ru.QuarkusErrorHandler] (executor-thread-47) HTTP Request to /api/config failed, error id: ca2a1960-ba0c-42ed-8c51-37918deae143-11: org.jboss.resteasy.spi.UnhandledException: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
 --
-15:03:43 INFO  traceId=909358a3b04bb801570115e9b15d2154, parentId=, spanId=fcb7f450dd08981b, sampled=true [co.re.fr.ga.re.RequestHeaderFactory] (executor-thread-47) span: ImmutableSpanContext{traceId=909358a3b04bb801570115e9b15d2154, spanId=fcb7f450dd08981b, traceFlags=01, traceState=ArrayBasedTraceState{entries=[]}, remote=false, valid=true}
---
+        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+        at java.base/java.lang.Thread.run(Thread.java:833)
+Caused by: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
         at com.redhat.fruit.gateway.ApiImpl.configGet(ApiImpl.java:61) <2>
         at jdk.internal.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
         at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -76,10 +81,36 @@ oc logs deployments/fruit-gateway -n {street-java-namespace} | grep -B20 ERROR |
         at org.jboss.resteasy.core.SynchronousDispatcher.invoke(SynchronousDispatcher.java:492)
         ... 15 more
 
-15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search <1>
+15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search
 15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [io.qu.ve.ht.ru.QuarkusErrorHandler] (executor-thread-47) HTTP Request to /api/config failed, error id: ca2a1960-ba0c-42ed-8c51-37918deae143-12: org.jboss.resteasy.spi.UnhandledException: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
 ----
-<1> This trace belongs to a class from our service `fruit-service`
-<2> You can see the line where the error happens
+<1> You can see the line where the error happens
+<2> This trace belongs to a class from our service `fruit-service`
 
+[#web-console]
+=== Using OpenShift web console
 
+Open the next link:
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/k8s/ns/{street-java-namespace}/deployments/fruit-gateway/pods
+----
+
+Then click on *Pods*:
+
+image:the-haystack-web-console-1.png[alt]
+
+Now on *Logs*:
+
+image:the-haystack-web-console-2.png[alt]
+
+Pay attention to the line pointed with the red arrow, the same we found before using `oc logs`.
+
+image:the-haystack-web-console-3.png[alt]
+
+[#kibana]
+=== Using Kibana
+
+Before we actually use kibana we have to do some work... index pattern.
