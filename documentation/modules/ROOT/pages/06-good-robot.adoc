@@ -67,9 +67,9 @@ if [ -z "${CONTAINER_REGISTRY_USERNAME}" ] && [ -z "${CONTAINER_REGISTRY_PASSWOR
     echo "You should provide a value for CONTAINER_REGISTRY_USERNAME and CONTAINER_REGISTRY_PASSWORD"
 else
 oc create -n {street-java-namespace} secret docker-registry {street-java-pull-secret-name} \
-  --docker-server=https://$CONTAINER_REGISTRY_SERVER \
-  --docker-username=$CONTAINER_REGISTRY_USERNAME \
-  --docker-password=$CONTAINER_REGISTRY_PASSWORD
+  --docker-server=https://{quay-server} \
+  --docker-username=${CONTAINER_REGISTRY_USERNAME} \
+  --docker-password=${CONTAINER_REGISTRY_PASSWORD}
 fi
 ----
 
@@ -153,7 +153,7 @@ Or run the next command:
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-curl https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .
+curl -s https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .name
 ----
 
 You will think... Yes, it's still there, alive and kicking... but the devil is in the details...

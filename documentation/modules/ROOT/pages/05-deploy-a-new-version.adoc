@@ -161,11 +161,31 @@ In order to copy the image you're going to use `skopeo`, if you want to learn mo
 
 Before you can copy the image to need to log in the registry server:
 
+[tabs]
+====
+skopeo::
++
+--
+
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-skopeo login -u {username} -p {password} {quay-server}
+skopeo login -u {username} -p {password} --tls-verify=false {quay-server}
 ----
+
+--
+podman::
++
+--
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+podman login -u {username} -p {password} --tls-verify=false {quay-server}
+----
+
+--
+====
 
 You should see this message:
 
@@ -188,11 +208,32 @@ export GIT_HASH=$(git rev-parse HEAD)
 
 Now, you're logged in and the environmen is set, let's copy the image:
 
+[tabs]
+====
+skopeo::
++
+--
+
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-skopeo copy containers-storage:localhost/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} docker://{quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
+skopeo copy --src-tls-verify=false --dest-tls-verify=false containers-storage:localhost/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} docker://{quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
 ----
+
+--
+podman::
++
+--
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+podman tag localhost/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
+podman push --tls-verify=false {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
+----
+
+--
+====
 
 If it all goes well, you will see messages like these:
 
@@ -216,13 +257,36 @@ Storing signatures
 
 Finally let's obtain the digest of the image you just pushed to the registry, you will needed later:
 
+[tabs]
+====
+skopeo::
++
+--
+
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-export IMAGE_DIGEST_RAW=$(skopeo inspect docker://{quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .Digest)
+export IMAGE_DIGEST_RAW=$(skopeo inspect --tls-verify=false docker://{quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .Digest)
 export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
-echo ${IMAGE_DIGEST}
+echo ">>>> IMAGE_DIGEST=${IMAGE_DIGEST}"
 ----
+
+--
+podman::
++
+--
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+podman pull --tls-verify=false {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
+export IMAGE_DIGEST_RAW=$(podman images --digests --format=json {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .[0].Digest)
+export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
+echo ">>>> IMAGE_DIGEST=${IMAGE_DIGEST}"
+----
+
+--
+====
 
 You will get a string like this:
 
@@ -282,7 +346,9 @@ REVISION: 2
 [#did-it-work]
 == Did it Work?
 
-Let's find out it our app still works properly. If you open the next link and pay attention to the `fruit-gateway` deployment.
+Let's find out it our app still works properly. If you open the next link and pay attention to the `fruit-gateway` deployment. Is the name of the service the one you expected?
+
+NOTE: If `config.service.name=fruit-gateway` then it should be `fruit-gateway`
 
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
@@ -295,10 +361,12 @@ Or run the next command:
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-curl https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .
+curl -s https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .name
 ----
 
-You will think... Yes, it's still there, alive and kicking... but the devil is in the details...
+You will think... Yes, it's still there, alive and kicking... but the devil is in the details... Is the answer the one you expected?
+
+NOTE: If `config.service.name=fruit-gateway` then it should be `fruit-gateway`
 
 Let's have a look to the deployment object:
 
