@@ -142,13 +142,22 @@
     <a class="nav-link" href="05-deploy-a-new-version.html#anatomy-of-your-chart">Anatomy of your Chart</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola">Deploying Gramola</a>
+    <a class="nav-link" href="05-deploy-a-new-version.html#building-a-new-version">Building a New Version</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="05-deploy-a-new-version.html#deploying-gramola-additional">Deploying Gramola++</a>
+    <a class="nav-link" href="05-deploy-a-new-version.html#pushing-new-image">Pushing New Image</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="05-deploy-a-new-version.html#argocd-ui-filtering">ArgoCD UI Filtering</a>
+    <a class="nav-link" href="05-deploy-a-new-version.html#getting-the-image-digest">Getting the Image Digest</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#update-image-digest">Update the Image Digest</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#did-it-work">Did it Work?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05-deploy-a-new-version.html#events">Events</a>
   </li>
 </ul>
   </li>
@@ -466,9 +475,9 @@ This is not the only way to do it, you could add credentials directly to the Dep
     echo "You should provide a value for CONTAINER_REGISTRY_USERNAME and CONTAINER_REGISTRY_PASSWORD"
 else
 oc create -n street-java-%USERNAME% secret docker-registry street-java-pull-secret \
-  --docker-server=https://$CONTAINER_REGISTRY_SERVER \
-  --docker-username=$CONTAINER_REGISTRY_USERNAME \
-  --docker-password=$CONTAINER_REGISTRY_PASSWORD
+  --docker-server=https://myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN% \
+  --docker-username=${CONTAINER_REGISTRY_USERNAME} \
+  --docker-password=${CONTAINER_REGISTRY_PASSWORD}
 fi</code></pre>
 </div>
 </div>
@@ -569,7 +578,7 @@ fi</code></pre>
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl -s <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .name</code></pre>
 </div>
 </div>
 <div class="paragraph">
