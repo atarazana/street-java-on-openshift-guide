@@ -1,0 +1,85 @@
+= Finding the needle
+include::_attributes.adoc[]
+
+We have installed link:https://docs.openshift.com/container-platform/{oc-version}/logging/cluster-logging.html[OpenShift Logging], based on link:https://www.fluentd.org/[Fluentd], link:https://www.elastic.co/[Elastic Search] and link:https://www.elastic.co/es/kibana/[Kibana]. This provides you with the following benefits:
+
+- *Centralized logs*, all stdout from a container will be forwarded by fluentd to elastic search
+- *RBAC based Kibana console* will allow you to see the logs of cotainers running in namespaces you have been granted access to
+
+[#the-needle]
+== The Needle
+
+Maybe you have noticed some spurious error while running the UI of your application or running curl against the Street Java API... If you have... well now it's time to fix that else... it's time to prove this errors happen.
+
+Please run this command:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+for i in {1..20}; do curl -sI https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | grep HTTP; done
+----
+
+You should get an output similar to this one:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+HTTP/1.1 200 OK
+HTTP/1.1 200 OK
+HTTP/1.1 500 Internal Server Error
+...
+HTTP/1.1 200 OK
+HTTP/1.1 200 OK
+HTTP/1.1 500 Internal Server Error
+----
+
+But where is this error happening? How can I find out in an OpenShift cluster?
+
+[#the-heystack]
+== The Heystack
+
+There are several ways to look for the trace of this error, the needle:
+
+- By using `oc logs` from the command line to stream the logs from a pod
+- By looking at the logs of a pod in the OpenShift web console
+- By using Kibana console
+
+Let's start from the command line, please run this command.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc logs deployments/fruit-gateway | grep ERROR
+oc logs deployments/fruit-gateway -n {street-java-namespace} | grep -B20 ERROR | grep -A20 com.redhat.fruit
+----
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+--
+15:03:43 INFO  traceId=909358a3b04bb801570115e9b15d2154, parentId=, spanId=fcb7f450dd08981b, sampled=true [co.re.fr.ga.re.RequestHeaderFactory] (executor-thread-47) span: ImmutableSpanContext{traceId=909358a3b04bb801570115e9b15d2154, spanId=fcb7f450dd08981b, traceFlags=01, traceState=ArrayBasedTraceState{entries=[]}, remote=false, valid=true}
+--
+        at com.redhat.fruit.gateway.ApiImpl.configGet(ApiImpl.java:61) <2>
+        at jdk.internal.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+        at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+        at org.jboss.resteasy.core.MethodInjectorImpl.invoke(MethodInjectorImpl.java:170)
+        at org.jboss.resteasy.core.MethodInjectorImpl.invoke(MethodInjectorImpl.java:130)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.internalInvokeOnTarget(ResourceMethodInvoker.java:660)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invokeOnTargetAfterFilter(ResourceMethodInvoker.java:524)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.lambda$invokeOnTarget$2(ResourceMethodInvoker.java:474)
+        at org.jboss.resteasy.core.interception.jaxrs.PreMatchContainerRequestContext.filter(PreMatchContainerRequestContext.java:364)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invokeOnTarget(ResourceMethodInvoker.java:476)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:434)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:408)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:69)
+        at org.jboss.resteasy.core.SynchronousDispatcher.invoke(SynchronousDispatcher.java:492)
+        ... 15 more
+
+15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search <1>
+15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [io.qu.ve.ht.ru.QuarkusErrorHandler] (executor-thread-47) HTTP Request to /api/config failed, error id: ca2a1960-ba0c-42ed-8c51-37918deae143-12: org.jboss.resteasy.spi.UnhandledException: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
+----
+<1> This trace belongs to a class from our service `fruit-service`
+<2> You can see the line where the error happens
+
+

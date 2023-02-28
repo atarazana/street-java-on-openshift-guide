@@ -136,6 +136,11 @@ Or run the next command:
 
 [NOTE]
 ====
+
+Running the next command you will invoke `/api/config` which produces a JSON object like the next one, `jq .name` will return only the `name` attribute value, hence `fruit-gateway` in this case.
+
+[source,json,attributes]
+----
 {
   "name": "fruit-gateway",
   "status": {
@@ -148,6 +153,8 @@ Or run the next command:
     "status": "OPERATIONAL"
   }
 }
+----
+
 ====
 
 [.console-input]
@@ -156,9 +163,7 @@ Or run the next command:
 curl -s https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .name
 ----
 
-You will think... Yes, it's still there, alive and kicking... but the devil is in the details...
-
-Let's have a look to the deployment object, in this cae there shouldn't be any errors.
+You can also have a look to the deployment object, in this case there shouldn't be any errors.
 
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
