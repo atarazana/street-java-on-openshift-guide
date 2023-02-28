@@ -6,7 +6,7 @@
     <title>Good Robot :: Street Java on OpenShift</title>
     <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/06-good-robot.html">
     <link rel="prev" href="05-deploy-a-new-version.html">
-    <link rel="next" href="07-checking-cicd-pipelines.html">
+    <link rel="next" href="07-finding-the-needle.html">
     <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
 <link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
@@ -178,13 +178,13 @@
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="07-checking-cicd-pipelines.html">7. Checking CICD Pipelines</a>
+    <a class="nav-link" href="07-finding-the-needle.html">7. Finding the needle</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="07-checking-cicd-pipelines.html#overview">Overview</a>
+    <a class="nav-link" href="07-finding-the-needle.html#overview">Overview</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="07-checking-cicd-pipelines.html#tekton-triggers">Tekton Triggers</a>
+    <a class="nav-link" href="07-finding-the-needle.html#tekton-triggers">Tekton Triggers</a>
   </li>
 </ul>
   </li>
@@ -559,7 +559,11 @@ fi</code></pre>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>{
+<p>Running the next command you will invoke <code>/api/config</code> which produces a JSON object like the next one, <code>jq .name</code> will return only the <code>name</code> attribute value, hence <code>fruit-gateway</code> in this case.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
   "name": "fruit-gateway",
   "status": {
     "checks": [
@@ -570,7 +574,8 @@ fi</code></pre>
     ],
     "status": "OPERATIONAL"
   }
-}</p>
+}</code></pre>
+</div>
 </div>
 </td>
 </tr>
@@ -582,10 +587,7 @@ fi</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You will think&#8230;&#8203; Yes, it&#8217;s still there, alive and kicking&#8230;&#8203; but the devil is in the details&#8230;&#8203;</p>
-</div>
-<div class="paragraph">
-<p>Let&#8217;s have a look to the deployment object, in this cae there shouldn&#8217;t be any errors.</p>
+<p>You can also have a look to the deployment object, in this case there shouldn&#8217;t be any errors.</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
@@ -596,7 +598,7 @@ fi</code></pre>
 </div>
 <nav class="pagination">
   <span class="prev"><a href="05-deploy-a-new-version.html" class="query-params-link">5. Deploy New Version</a></span>
-  <span class="next"><a href="07-checking-cicd-pipelines.html" class="query-params-link">7. Checking CICD Pipelines</a></span>
+  <span class="next"><a href="07-finding-the-needle.html" class="query-params-link">7. Finding the needle</a></span>
 </nav>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">

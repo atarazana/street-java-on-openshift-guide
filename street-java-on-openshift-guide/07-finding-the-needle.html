@@ -3,8 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Untitled :: Street Java on OpenShift</title>
-    <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/ZZ-annexes.html">
+    <title>Finding the needle :: Street Java on OpenShift</title>
+    <link rel="canonical" href="https://atarazana.github.io/street-java-on-openshift-guide/street-java-on-openshift-guide/07-finding-the-needle.html">
+    <link rel="prev" href="06-good-robot.html">
+    <link rel="next" href="08-create-pipeline-webhooks.html">
     <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
 <link rel="icon" href="../_/img/favicon.ico" type="image/x-icon">
@@ -174,15 +176,15 @@
   </li>
 </ul>
   </li>
-  <li class="nav-item" data-depth="1">
+  <li class="nav-item is-current-page" data-depth="1">
     <button class="nav-item-toggle"></button>
     <a class="nav-link" href="07-finding-the-needle.html">7. Finding the needle</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="07-finding-the-needle.html#overview">Overview</a>
+    <a class="nav-link" href="#overview">Overview</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="07-finding-the-needle.html#tekton-triggers">Tekton Triggers</a>
+    <a class="nav-link" href="#tekton-triggers">Tekton Triggers</a>
   </li>
 </ul>
   </li>
@@ -272,108 +274,138 @@
 <button class="nav-toggle"></button>
   <a href="index.html" class="home-link"></a>
 <nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Street Java on OpenShift</a></li>
+    <li><a href="07-finding-the-needle.html">7. Finding the needle</a></li>
+  </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/ZZ-annexes.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/atarazana/street-java-on-openshift-guide/edit/main/documentation/modules/ROOT/pages/07-finding-the-needle.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <article class="doc">
-<div class="sect1">
-<h2 id="_add_plugin_section_to_argocd_custom_resource"><a class="anchor" href="#_add_plugin_section_to_argocd_custom_resource"></a>Add plugin section to ArgoCD Custom Resource</h2>
+<h1 class="page">Finding the needle</h1>
+<div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>We’re using a custom plugin called <code>kustomized-helm</code> if you’re
-interested have a look at section <code>configManagementPlugins</code> in
-<code>./util/bootstrap/2.openshift-gitops-patch</code>.</p>
+<p>We have installed <a href="https://docs.openshift.com/container-platform/{oc-version}/logging/cluster-logging.html">OpenShift Logging</a>, based on <a href="https://www.fluentd.org/">Fluentd</a>, <a href="https://www.elastic.co/">Elastic Search</a> and <a href="https://www.elastic.co/es/kibana/">Kibana</a>. This provides you with the following benefits:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Centralized logs</strong>, all stdout from a container will be forwarded by fluentd to elastic search</p>
+</li>
+<li>
+<p><strong>RBAC based Kibana console</strong> will allow you to see the logs of cotainers running in namespaces you have been granted access to</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_adjust_permissions_of_service_account"><a class="anchor" href="#_adjust_permissions_of_service_account"></a>Adjust permissions of Service Account</h2>
+<h2 id="the-needle"><a class="anchor" href="#the-needle"></a>The Needle</h2>
 <div class="sectionbody">
-<div class="listingblock">
+<div class="paragraph">
+<p>Maybe you have noticed some spurious error while running the UI of your application or running curl against the Street Java API&#8230;&#8203; If you have&#8230;&#8203; well now it&#8217;s time to fix that else&#8230;&#8203; it&#8217;s time to prove this errors happen.</p>
+</div>
+<div class="paragraph">
+<p>Please run this command:</p>
+</div>
+<div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc apply -f util/argocd-service-account-permissions.yaml</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">for i in {1..20}; do curl -sI <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | grep HTTP; done</code></pre>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_github"><a class="anchor" href="#_github"></a>GitHub</h3>
 <div class="paragraph">
-<p>You can find an easy guide step by step by following this link:
-<a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">Creating
-a personal access token - GitHub Docs</a></p>
+<p>You should get an output similar to this one:</p>
 </div>
-<div class="admonitionblock note">
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">HTTP/1.1 200 OK
+HTTP/1.1 200 OK
+HTTP/1.1 500 Internal Server Error
+...
+HTTP/1.1 200 OK
+HTTP/1.1 200 OK
+HTTP/1.1 500 Internal Server Error</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>But where is this error happening? How can I find out in an OpenShift cluster?</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="the-heystack"><a class="anchor" href="#the-heystack"></a>The Heystack</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are several ways to look for the trace of this error, the needle:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>By using <code>oc logs</code> from the command line to stream the logs from a pod</p>
+</li>
+<li>
+<p>By looking at the logs of a pod in the OpenShift web console</p>
+</li>
+<li>
+<p>By using Kibana console</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s start from the command line, please run this command.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc logs deployments/fruit-gateway | grep ERROR
+oc logs deployments/fruit-gateway -n street-java-%USERNAME% | grep -B20 ERROR | grep -A20 com.redhat.fruit</code></pre>
+</div>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">--
+15:03:43 INFO  traceId=909358a3b04bb801570115e9b15d2154, parentId=, spanId=fcb7f450dd08981b, sampled=true [co.re.fr.ga.re.RequestHeaderFactory] (executor-thread-47) span: ImmutableSpanContext{traceId=909358a3b04bb801570115e9b15d2154, spanId=fcb7f450dd08981b, traceFlags=01, traceState=ArrayBasedTraceState{entries=[]}, remote=false, valid=true}
+--
+        at com.redhat.fruit.gateway.ApiImpl.configGet(ApiImpl.java:61) <i class="conum" data-value="2"></i><b>(2)</b>
+        at jdk.internal.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+        at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+        at org.jboss.resteasy.core.MethodInjectorImpl.invoke(MethodInjectorImpl.java:170)
+        at org.jboss.resteasy.core.MethodInjectorImpl.invoke(MethodInjectorImpl.java:130)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.internalInvokeOnTarget(ResourceMethodInvoker.java:660)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invokeOnTargetAfterFilter(ResourceMethodInvoker.java:524)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.lambda$invokeOnTarget$2(ResourceMethodInvoker.java:474)
+        at org.jboss.resteasy.core.interception.jaxrs.PreMatchContainerRequestContext.filter(PreMatchContainerRequestContext.java:364)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invokeOnTarget(ResourceMethodInvoker.java:476)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:434)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:408)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:69)
+        at org.jboss.resteasy.core.SynchronousDispatcher.invoke(SynchronousDispatcher.java:492)
+        ... 15 more
+
+15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search <i class="conum" data-value="1"></i><b>(1)</b>
+15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [io.qu.ve.ht.ru.QuarkusErrorHandler] (executor-thread-47) HTTP Request to /api/config failed, error id: ca2a1960-ba0c-42ed-8c51-37918deae143-12: org.jboss.resteasy.spi.UnhandledException: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search</code></pre>
+</div>
+</div>
+<div class="colist arabic">
 <table>
 <tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-We’re covering Github in this guide if you use a different git server you may have to do some adjustments.
-</td>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>This trace belongs to a class from our service <code>fruit-service</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>You can see the line where the error happens</td>
 </tr>
 </table>
 </div>
-<div class="paragraph">
-<p>In order to refer to a repository in ArgoCD you have to register it before, the next command will do this for you asking for the repo url
-and the the Personal Access Token (PAT) to access to the repository.</p>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_useful_commands"><a class="anchor" href="#_useful_commands"></a>Useful commands</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_sync_root_apps_alone"><a class="anchor" href="#_sync_root_apps_alone"></a>Sync Root Apps alone</h3>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">argocd --insecure app sync gramola-root-app-dev
-argocd --insecure app sync gramola-root-app-test
-argocd --insecure app sync gramola-root-app-test-cloud</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_sync_apps_manually"><a class="anchor" href="#_sync_apps_manually"></a>Sync apps manually</h3>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">argocd --insecure app sync events-app-dev
-argocd --insecure app sync events-app-test
-argocd --insecure app sync events-app-test-cloud</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_sync_children_apps_app_of_apps"><a class="anchor" href="#_sync_children_apps_app_of_apps"></a>Sync children apps (app of apps)</h3>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">argocd --insecure app sync -l app.kubernetes.io/instance=gramola-root-app
-argocd --insecure app sync -l app.kubernetes.io/instance=gramola-root-app-dev
-argocd --insecure app sync -l app.kubernetes.io/instance=gramola-root-app-test
-argocd --insecure app sync -l app.kubernetes.io/instance=gramola-root-app-test-cloud</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_github_webhook_payload"><a class="anchor" href="#_github_webhook_payload"></a>Github Webhook payload</h2>
-<div class="sectionbody">
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<a href="https://github.com/drone/go-scm/blob/master/scm/driver/gitea/testdata/webhooks/push.json" class="bare">https://github.com/drone/go-scm/blob/master/scm/driver/gitea/testdata/webhooks/push.json</a>
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
+<nav class="pagination">
+  <span class="prev"><a href="06-good-robot.html" class="query-params-link">6. Good Robot</a></span>
+  <span class="next"><a href="08-create-pipeline-webhooks.html" class="query-params-link">8. Create Pipelines Webhooks</a></span>
+</nav>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
