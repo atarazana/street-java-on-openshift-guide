@@ -13,6 +13,8 @@
 
 :street-java-link: fruit-gateway-{street-java-namespace}.{cluster-subdomain}
 
+:kibana-server: kibana-openshift-logging.{cluster-subdomain}
+
 :argocd-server: openshift-gitops-server-openshift-gitops.{cluster-subdomain}
 
 :use-quay-io: false

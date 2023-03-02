@@ -1,0 +1,213 @@
+= Who Needs Monitoring
+include::../partials/versions.adoc[]
+include::_attributes.adoc[]
+
+Who needs monitoring, right?
+
+image:this-is-fine.jpg[alt]
+
+Well in case you think it's a good idea to monitor your application then keep reading and doing!
+
+[#the-monitoring-stack]
+== The Monitoring Stack
+
+In OpenShift we use link:https://prometheus.io[Prometheus] as the more prominent piece of software, link:https://thanos.io[Thanos] is the other piece. In OpenShift monitoring is a key subject, you can read more about it link:https://docs.openshift.com/container-platform/{oc-version}/monitoring/monitoring-overview.html[here].
+
+For this lab, let's concentrate on Prometheus. Promethus is installed and maintained by an operator, the installation of an OpenShift cluster already takes care of installing Prometheus and maintaining it using the operator.
+
+In case you don't know what an operator is please read link:https://www.redhat.com/en/technologies/cloud-computing/openshift/what-are-openshift-operators[this]. But for the sake of simplicity for now consider an operator as specialized logic run as a pod in a kubernetes cluster that takes care of installing and maintaining a system based on yaml definitions called link:https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources[CRD].
+
+Another important aspect is that in order to define monitoring targets in our cluster you have to create objects of type ServiceMonitor, find bellow an example:
+
+[source,yaml,attributes]
+----
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: prometheus
+  name: monitor
+spec:
+  endpoints:
+    - interval: 30s
+      path: /actuator/prometheus
+      port: http
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      monitored: prometheus
+----
+
+
+
+Please run this command:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+for i in {1..20}; do curl -sI https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | grep HTTP; done
+----
+
+You should get an output similar to this one:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+HTTP/1.1 200 OK
+HTTP/1.1 200 OK
+HTTP/1.1 500 Internal Server Error
+...
+HTTP/1.1 200 OK
+HTTP/1.1 200 OK
+HTTP/1.1 500 Internal Server Error
+----
+
+But where is this error happening? How can I find out in an OpenShift cluster?
+
+[#the-haystack]
+== The Haystack
+
+There are several ways to look for the trace of this error, the needle, in OpenShift, the haystack:
+
+- By using `oc logs` from the command line to stream the logs from a pod
+- By looking at the logs of a pod in the OpenShift web console
+- By using Kibana console
+
+[#oc-logs]
+=== Using oc logs
+
+Let's start from the command line, please run this command:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc logs deployments/fruit-gateway -n {street-java-namespace} | grep -B20 -e ".*ERROR.*c.*r.*fruit.*"
+----
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+15:03:44 ERROR traceId=973211f9c982264465cf427cfb37fccd, parentId=, spanId=3d65221ef35793b5, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search <1>
+15:03:44 ERROR traceId=973211f9c982264465cf427cfb37fccd, parentId=, spanId=3d65221ef35793b5, sampled=true [io.qu.ve.ht.ru.QuarkusErrorHandler] (executor-thread-47) HTTP Request to /api/config failed, error id: ca2a1960-ba0c-42ed-8c51-37918deae143-11: org.jboss.resteasy.spi.UnhandledException: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
+--
+        at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+        at java.base/java.lang.Thread.run(Thread.java:833)
+Caused by: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
+        at com.redhat.fruit.gateway.ApiImpl.configGet(ApiImpl.java:61) <2>
+        at jdk.internal.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+        at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+        at org.jboss.resteasy.core.MethodInjectorImpl.invoke(MethodInjectorImpl.java:170)
+        at org.jboss.resteasy.core.MethodInjectorImpl.invoke(MethodInjectorImpl.java:130)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.internalInvokeOnTarget(ResourceMethodInvoker.java:660)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invokeOnTargetAfterFilter(ResourceMethodInvoker.java:524)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.lambda$invokeOnTarget$2(ResourceMethodInvoker.java:474)
+        at org.jboss.resteasy.core.interception.jaxrs.PreMatchContainerRequestContext.filter(PreMatchContainerRequestContext.java:364)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invokeOnTarget(ResourceMethodInvoker.java:476)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:434)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:408)
+        at org.jboss.resteasy.core.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:69)
+        at org.jboss.resteasy.core.SynchronousDispatcher.invoke(SynchronousDispatcher.java:492)
+        ... 15 more
+
+15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-47) Forced error to find in jaeger and elastic search
+15:03:45 ERROR traceId=069962cbd3021c66b239e96adc4a8cf7, parentId=, spanId=61c5d221d4091f50, sampled=true [io.qu.ve.ht.ru.QuarkusErrorHandler] (executor-thread-47) HTTP Request to /api/config failed, error id: ca2a1960-ba0c-42ed-8c51-37918deae143-12: org.jboss.resteasy.spi.UnhandledException: javax.transaction.NotSupportedException: Forced error to find in jaeger and elastic search
+----
+<1> You can see the line where the error happens
+<2> This trace belongs to a class from our service `fruit-service`
+
+[#web-console]
+=== Using OpenShift web console
+
+Open the next link:
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/k8s/ns/{street-java-namespace}/deployments/fruit-gateway/pods
+----
+
+Then click on *Pods*:
+
+image:the-haystack-web-console-1.png[Pods]
+
+Now on *Logs*:
+
+image:the-haystack-web-console-2.png[Logs]
+
+Pay attention to the line pointed with the red arrow, the same we found before using `oc logs`.
+
+image:the-haystack-web-console-3.png[Culprit found]
+
+[#using-kibana]
+=== Using Kibana
+
+Before we actually use kibana we have to do some work... create an index pattern. This is something you typically will do once. In order to open Kibana you can either go directly or jump from the pod you're interested in. 
+
+[#preparing-kibana]
+==== Preparing Kibana
+
+Let's open kibana directly and create the index pattern we need to read the application related logs. Please use this link:
+
+[NOTE]
+====
+
+If you haven't logged in before you'll be redirected to the OpenShift authentication page. Then after logging in successfully you'll be prompted to accept some permissions as in the next picture, please accept them.
+
+image:the-haystack-kibana-0.png[Kibana permissions]
+
+====
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{kibana-server}
+----
+
+Alright you're logged in and because is the first time you'll land in the page where we have to create the index pattern. Click on the `Create Index Pattern` button.
+
+image:the-haystack-kibana-1.png[Create the index pattern 1]
+
+Now, type in `app` in the `Index pattern` text field, as in the next picture. As you type in the pattern you will see the list of matching indexes below being reduced to the ones we're interested in, indexes from apps. Click on the `Next step` button when ready.
+
+image:the-haystack-kibana-2.png[Create the index pattern 2]
+
+This time you have to choose which field of the log entry will be used as the time filter. Select `@timestamp` as in the following picture then click on the `Create index pattern` button.
+
+image:the-haystack-kibana-3.png[Create the index pattern 3]
+
+If it all went fine you should land in the index pattern view page and see the index patter you just created, something like this.
+
+image:the-haystack-kibana-4.png[Create the index pattern 4]
+
+
+[#using-kibana-from-log-view]
+==== Using Kibana From Log View
+
+Hopefully you will still have your browser open in the view of the logs of a pod. If that is the case then you can jump from there. Go there and click on the link `Show in Kibana`.
+
+[NOTE]
+====
+
+If you accidentally closed the browser use this link then click on the `fruit-gateway-` pod and then `Logs` and finally on `Show in Kibana`.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/k8s/ns/{street-java-namespace}/pods
+----
+
+====
+
+image:the-haystack-kibana-5.png[Kibana from pod]
+
+`Show in Kibana` provides you with a link filled in with the filter you need to read the logs of a specific pod automatically.
+
+[#fixing-the-problem]
+== Fixing the Problem
+
+Alright we found the potential culprit, let's have a look to the code.
+
+> com.redhat.fruit.gateway.ApiImpl.configGet(ApiImpl.java:61)
+

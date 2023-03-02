@@ -1,4 +1,4 @@
-= Finding the needle
+= The Needle in The Haystack
 include::_attributes.adoc[]
 
 We have installed link:https://docs.openshift.com/container-platform/{oc-version}/logging/cluster-logging.html[OpenShift Logging], based on link:https://www.fluentd.org/[Fluentd], link:https://www.elastic.co/[Elastic Search] and link:https://www.elastic.co/es/kibana/[Kibana]. This provides you with the following benefits:
@@ -100,17 +100,85 @@ https://{openshift-console-host}/k8s/ns/{street-java-namespace}/deployments/frui
 
 Then click on *Pods*:
 
-image:the-haystack-web-console-1.png[alt]
+image:the-haystack-web-console-1.png[Pods]
 
 Now on *Logs*:
 
-image:the-haystack-web-console-2.png[alt]
+image:the-haystack-web-console-2.png[Logs]
 
 Pay attention to the line pointed with the red arrow, the same we found before using `oc logs`.
 
-image:the-haystack-web-console-3.png[alt]
+image:the-haystack-web-console-3.png[Culprit found]
 
-[#kibana]
+[#using-kibana]
 === Using Kibana
 
-Before we actually use kibana we have to do some work... index pattern.
+Before we actually use kibana we have to do some work... create an index pattern. This is something you typically will do once. In order to open Kibana you can either go directly or jump from the pod you're interested in. 
+
+[#preparing-kibana]
+==== Preparing Kibana
+
+Let's open kibana directly and create the index pattern we need to read the application related logs. Please use this link:
+
+[NOTE]
+====
+
+If you haven't logged in before you'll be redirected to the OpenShift authentication page. Then after logging in successfully you'll be prompted to accept some permissions as in the next picture, please accept them.
+
+image:the-haystack-kibana-0.png[Kibana permissions]
+
+====
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{kibana-server}
+----
+
+Alright you're logged in and because is the first time you'll land in the page where we have to create the index pattern. Click on the `Create Index Pattern` button.
+
+image:the-haystack-kibana-1.png[Create the index pattern 1]
+
+Now, type in `app` in the `Index pattern` text field, as in the next picture. As you type in the pattern you will see the list of matching indexes below being reduced to the ones we're interested in, indexes from apps. Click on the `Next step` button when ready.
+
+image:the-haystack-kibana-2.png[Create the index pattern 2]
+
+This time you have to choose which field of the log entry will be used as the time filter. Select `@timestamp` as in the following picture then click on the `Create index pattern` button.
+
+image:the-haystack-kibana-3.png[Create the index pattern 3]
+
+If it all went fine you should land in the index pattern view page and see the index patter you just created, something like this.
+
+image:the-haystack-kibana-4.png[Create the index pattern 4]
+
+
+[#using-kibana-from-log-view]
+==== Using Kibana From Log View
+
+Hopefully you will still have your browser open in the view of the logs of a pod. If that is the case then you can jump from there. Go there and click on the link `Show in Kibana`.
+
+[NOTE]
+====
+
+If you accidentally closed the browser use this link then click on the `fruit-gateway-` pod and then `Logs` and finally on `Show in Kibana`.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/k8s/ns/{street-java-namespace}/pods
+----
+
+====
+
+image:the-haystack-kibana-5.png[Kibana from pod]
+
+`Show in Kibana` provides you with a link filled in with the filter you need to read the logs of a specific pod automatically.
+
+[#fixing-the-problem]
+== Fixing the Problem
+
+Alright we found the potential culprit, let's have a look to the code.
+
+> com.redhat.fruit.gateway.ApiImpl.configGet(ApiImpl.java:61)
+
+PTE!
