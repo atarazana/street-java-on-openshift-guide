@@ -16,12 +16,12 @@ So if you are not already logged in, please do it now.
 
 [source,sh, subs="+macros,+attributes"]
 ----
-oc login -u {username} -p {password} --server=https://api.{api-domain}
+oc login -u {username} -p {password} --server=https://api.{api-domain} --insecure-skip-tls-verify=false
 ----
 
 [WARNING]
 ====
-If the API server you're trying to log in uses a self-signed certificate or otherwise non trusted CA you will receive this message
+The *--insecure-skip-tls-verify=false* allows to trust the API server if uses a self-signed certificate or otherwise non trusted CA. If missing, you will receive this message:
 
 [.console-output]
 [source,sh, subs="+macros,+attributes"]
@@ -31,7 +31,7 @@ You can bypass the certificate check, but any data you send to the server could 
 Use insecure connections? (y/n): 
 ----
 
-Type 'y' only if you trust the server!
+In this case, type 'y' only if you trust the server!
 
 ====
 

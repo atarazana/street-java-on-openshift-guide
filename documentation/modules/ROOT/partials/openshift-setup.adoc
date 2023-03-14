@@ -5,7 +5,7 @@ You can check the OpenShift version using:
 [.console-input]
 [source,bash,subs="attributes+,+macros"]	
 ----	
-oc version	
+oc version --client
 ----	
 
 The output should show oc version {oc-version}+:	
