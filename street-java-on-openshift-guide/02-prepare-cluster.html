@@ -269,7 +269,7 @@
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc login -u %USERNAME% -p %PASSWORD% --server=https://api.%BASE_SUBDOMAIN%:6443</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc login -u %USERNAME% -p %PASSWORD% --server=https://api.%BASE_SUBDOMAIN%:6443 --insecure-skip-tls-verify=false</code></pre>
 </div>
 </div>
 <div class="admonitionblock warning">
@@ -280,7 +280,7 @@
 </td>
 <td class="content">
 <div class="paragraph">
-<p>If the API server you&#8217;re trying to log in uses a self-signed certificate or otherwise non trusted CA you will receive this message</p>
+<p>The <strong>--insecure-skip-tls-verify=false</strong> allows to trust the API server if uses a self-signed certificate or otherwise non trusted CA. If missing, you will receive this message:</p>
 </div>
 <div class="listingblock console-output">
 <div class="content">
@@ -290,7 +290,7 @@ Use insecure connections? (y/n):</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Type 'y' only if you trust the server!</p>
+<p>In this case, type 'y' only if you trust the server!</p>
 </div>
 </td>
 </tr>
