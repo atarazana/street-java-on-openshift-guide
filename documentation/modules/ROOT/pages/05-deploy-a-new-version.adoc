@@ -170,7 +170,7 @@ skopeo::
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-skopeo login -u {username} -p {password} --tls-verify=false {quay-server}
+skopeo login -u {username} -p {quay-password} --tls-verify=false {quay-server}
 ----
 
 --
@@ -181,7 +181,7 @@ podman::
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-podman login -u {username} -p {password} --tls-verify=false {quay-server}
+podman login -u {username} -p {quay-password} --tls-verify=false {quay-server}
 ----
 
 --
@@ -410,14 +410,12 @@ Ok, so it's still working but with the previous image... that means we have to k
 [#events]
 == Events
 
-One way to find out why something is not working properly is having a look to the `Events` stream.
-
-Run this command 
+One way to find out why something is not working properly is having a look to the `Events` stream. Run this command that gets `Events` ordered by timestamp in reversed order, you'll see newer events at the end.
 
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-oc get events -n {street-java-namespace} | grep Failed
+oc get events --sort-by='.metadata.creationTimestamp' -n {street-java-namespace} | grep Failed
 ----
 
 You should see some good candidates like:
@@ -441,7 +439,7 @@ Open the next link to the registry and check if our guess is correct.
 Use this credentials:
 
 - *User:* {username}
-- *Password:* {password}
+- *Password:* {quay-password}
 ====
 
 [.console-input]
