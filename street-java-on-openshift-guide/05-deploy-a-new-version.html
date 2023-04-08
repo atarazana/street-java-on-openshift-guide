@@ -486,14 +486,14 @@ Successfully tagged localhost/street-java-fruit-gateway:a7d7a1534ca13c67de3472bb
 <div class="tab-pane" aria-labelledby="tabset1_skopeo">
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">skopeo login -u %USERNAME% -p %PASSWORD% --tls-verify=false myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">skopeo login -u %USERNAME% -p openshift --tls-verify=false myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%</code></pre>
 </div>
 </div>
 </div>
 <div class="tab-pane" aria-labelledby="tabset1_podman">
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">podman login -u %USERNAME% -p %PASSWORD% --tls-verify=false myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">podman login -u %USERNAME% -p openshift --tls-verify=false myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%</code></pre>
 </div>
 </div>
 </div>
@@ -767,14 +767,11 @@ status:
 <h2 id="events"><a class="anchor" href="#events"></a>Events</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>One way to find out why something is not working properly is having a look to the <code>Events</code> stream.</p>
-</div>
-<div class="paragraph">
-<p>Run this command</p>
+<p>One way to find out why something is not working properly is having a look to the <code>Events</code> stream. Run this command that gets <code>Events</code> ordered by timestamp in reversed order, you&#8217;ll see newer events at the end.</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc get events -n street-java-%USERNAME% | grep Failed</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc get events --sort-by='.metadata.creationTimestamp' -n street-java-%USERNAME% | grep Failed</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -821,7 +818,7 @@ At the end of the first line you will find this message <em>unauthorized: access
 <p><strong>User:</strong> %USERNAME%</p>
 </li>
 <li>
-<p><strong>Password:</strong> %PASSWORD%</p>
+<p><strong>Password:</strong> openshift</p>
 </li>
 </ul>
 </div>
