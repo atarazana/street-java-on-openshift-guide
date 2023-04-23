@@ -195,7 +195,7 @@ You should see this message:
 Login Succeeded!
 ----
 
-Run this command to load some environment variables:
+Run this command to load some environment variables used to build the name and tag of the new image:
 
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
@@ -206,7 +206,7 @@ export ARTIFACT_ID=$(mvn -f fruit-gateway/pom.xml help:evaluate -Dexpression=pro
 export GIT_HASH=$(git rev-parse HEAD)
 ----
 
-Now, you're logged in and the environmen is set, let's copy the image:
+Now, you're logged in and the environment is set, let's copy the image:
 
 [tabs]
 ====
@@ -268,10 +268,11 @@ skopeo::
 ----
 export IMAGE_DIGEST_RAW=$(skopeo inspect --tls-verify=false docker://{quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .Digest)
 export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
-echo ">>>> IMAGE_DIGEST=${IMAGE_DIGEST}"
+echo ">>>> IMAGE_DIGEST = ${IMAGE_DIGEST}"
 ----
 
 --
+////
 podman::
 +
 --
@@ -281,11 +282,19 @@ podman::
 ----
 podman pull --tls-verify=false {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
 export IMAGE_DIGEST_RAW=$(podman images --digests --format=json {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .[0].Digest)
+export IMAGE_DIGEST_RAW=$(podman inspect --type image --format=json {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq  | jq  .[0].RepoDigests[-1])
 export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
-echo ">>>> IMAGE_DIGEST=${IMAGE_DIGEST}"
+
+podman pull --tls-verify=false {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
+export IMAGE_DIGEST_RAW=$(podman inspect --type image --format=json {quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .[0].RepoDigests[-1])
+export IMAGE_DIGEST_RAW=${IMAGE_DIGEST_RAW#{quay-server}/{username}/${PROJECT_ID}-${ARTIFACT_ID}}
+export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
+
+echo ">>>> IMAGE_DIGEST = ${IMAGE_DIGEST}"
 ----
 
 --
+////
 ====
 
 You will get a string like this:

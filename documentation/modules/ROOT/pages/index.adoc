@@ -2,7 +2,7 @@
 :page-layout: home
 :!sectids:
 
-image::street-java-logo.svg[Street Java Logo,640,480]
+image::street-java-logo.svg[Street Java Logo,400]
 
 [.text-center.strong]
 == Introduction
