@@ -340,7 +340,36 @@ HTTP/1.1 500 Internal Server Error</code></pre>
 <p>In general you want find an error of this kind this way. Instead, you need a way to define a base line and detect abnormal situations, deviation from that baseline, etc.</p>
 </div>
 <div class="paragraph">
-<p>One way to generate this baseline is defining custom logic/business related metrics. Well, let/s define custom metrics</p>
+<p>One way to generate this baseline is defining custom logic/business related metrics. This means we have to do two things:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Generate prometheus compliant metrics using a library preferably from our code</p>
+</li>
+<li>
+<p>Configure Prometheus using a ServiceMonitor so that it can scrape the metrics we&#8217;re generating.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Well, let&#8217;s start by modifying the code.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="generating-metrics"><a class="anchor" href="#generating-metrics"></a>Generating Metrics</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You have to generate</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">&lt;dependency&gt;
+  &lt;groupId&gt;io.quarkus&lt;/groupId&gt;
+  &lt;artifactId&gt;quarkus-micrometer-registry-prometheus&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>But where is this error happening? How can I find out in an OpenShift cluster?</p>

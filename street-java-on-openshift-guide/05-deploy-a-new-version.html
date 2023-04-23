@@ -508,7 +508,7 @@ Successfully tagged localhost/street-java-fruit-gateway:a7d7a1534ca13c67de3472bb
 </div>
 </div>
 <div class="paragraph">
-<p>Run this command to load some environment variables:</p>
+<p>Run this command to load some environment variables used to build the name and tag of the new image:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
@@ -519,7 +519,7 @@ export GIT_HASH=$(git rev-parse HEAD)</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Now, you&#8217;re logged in and the environmen is set, let&#8217;s copy the image:</p>
+<p>Now, you&#8217;re logged in and the environment is set, let&#8217;s copy the image:</p>
 </div>
 <div class="tabset is-loading">
 <div class="ulist tabs">
@@ -581,9 +581,6 @@ Storing signatures</code></pre>
 <li>
 <p><a id="tabset3_skopeo"></a>skopeo</p>
 </li>
-<li>
-<p><a id="tabset3_podman"></a>podman</p>
-</li>
 </ul>
 </div>
 <div class="content">
@@ -592,17 +589,7 @@ Storing signatures</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">export IMAGE_DIGEST_RAW=$(skopeo inspect --tls-verify=false docker://myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/%USERNAME%/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .Digest)
 export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
-echo "&gt;&gt;&gt;&gt; IMAGE_DIGEST=${IMAGE_DIGEST}"</code></pre>
-</div>
-</div>
-</div>
-<div class="tab-pane" aria-labelledby="tabset3_podman">
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">podman pull --tls-verify=false myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/%USERNAME%/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH}
-export IMAGE_DIGEST_RAW=$(podman images --digests --format=json myregistry-quay-quay-system.apps.%BASE_SUBDOMAIN%/%USERNAME%/${PROJECT_ID}-${ARTIFACT_ID}:${GIT_HASH} | jq -r .[0].Digest)
-export IMAGE_DIGEST=${IMAGE_DIGEST_RAW:7}
-echo "&gt;&gt;&gt;&gt; IMAGE_DIGEST=${IMAGE_DIGEST}"</code></pre>
+echo "&gt;&gt;&gt;&gt; IMAGE_DIGEST = ${IMAGE_DIGEST}"</code></pre>
 </div>
 </div>
 </div>

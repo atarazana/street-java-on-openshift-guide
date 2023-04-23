@@ -487,7 +487,7 @@ fi</code></pre>
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get deployment/fruit-gateway -o jsonpath='{.spec.template.spec.imagePullSecrets}' -n street-java-%USERNAME% | jq .</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get deployment/fruit-gateway -n street-java-%USERNAME% -o json | jq .spec.template.spec.imagePullSecret</code></pre>
 </div>
 </div>
 </div>
@@ -496,12 +496,25 @@ fi</code></pre>
 <h2 id="did-it-work"><a class="anchor" href="#did-it-work"></a>Did it Work?</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Alrighty, let&#8217;s find out it our app still works properly. If you open the next link and pay attention to the <code>fruit-gateway</code> deployment.</p>
+<p>Alrighty, let&#8217;s find out it our app still works properly.</p>
+</div>
+<div class="paragraph">
+<p>You can either open the next link and pay attention to upper green area,</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">fruit-gateway-street-java-%USERNAME%.apps.%BASE_SUBDOMAIN%</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>if it worked then it should say:</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p><strong>Gateway 'fruit-gateway' status OPERATIONAL</strong>.</p>
+</div>
+</blockquote>
 </div>
 <div class="paragraph">
 <p>Or run the next command:</p>
@@ -514,7 +527,7 @@ fi</code></pre>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>Running the next command you will invoke <code>/api/config</code> which produces a JSON object like the next one, <code>jq .name</code> will return only the <code>name</code> attribute value, hence <code>fruit-gateway</code> in this case.</p>
+<p>Running the next command you will invoke <code>/api/config</code> which produces a JSON object like the next one, <code>jq .name</code> will return only the <code>name</code> attribute value, hence <code>fruit-gateway</code> if the deployment worked properly as in this case.</p>
 </div>
 <div class="listingblock">
 <div class="content">
