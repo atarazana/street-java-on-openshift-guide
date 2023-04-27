@@ -127,7 +127,7 @@
     <a class="nav-link" href="#limitrange-anatomy">LimitRange Anatomy</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="#getting-rid-of-the-limirange">Getting Rid of the LimitRange</a>
+    <a class="nav-link" href="#getting-rid-of-the-limirrange">Getting Rid of the LimitRange</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="#checking-the-app">Checking the App</a>
@@ -376,7 +376,7 @@ spec:
 </div>
 </div>
 <div class="sect1">
-<h2 id="getting-rid-of-the-limirange"><a class="anchor" href="#getting-rid-of-the-limirange"></a>Getting Rid of the LimitRange</h2>
+<h2 id="getting-rid-of-the-limitrange"><a class="anchor" href="#getting-rid-of-the-limitrange"></a>Getting Rid of the LimitRange</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>We could modify the LimitRange, increase the limits or in real world scenarios, request an administrator to do it on our behalf. In this lab you have permissions to update or delete the object&#8230;&#8203; let&#8217;s make it easy&#8230;&#8203; let&#8217;s delete the object.</p>
@@ -395,7 +395,38 @@ spec:
 </div>
 </div>
 <div class="paragraph">
-<p>If deployments are still not ready, try this command:</p>
+<p>If you try immediately you'll see something like:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+fruit-gateway      0/1     0            0           48s
+fruit-service      0/1     0            0           48s
+fruit-service-db   0/1     0            0           48s</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Repeat the command after a minute or so. You should get something like.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+fruit-gateway      1/1     1            1           105s
+fruit-service      1/1     1            1           105s
+fruit-service-db   1/1     1            1           105s</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If deployments are still not ready, try this command:
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock console-input">
 <div class="content">

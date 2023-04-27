@@ -127,7 +127,7 @@
     <a class="nav-link" href="04-limit-what.html#limitrange-anatomy">LimitRange Anatomy</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="04-limit-what.html#getting-rid-of-the-limirange">Getting Rid of the LimitRange</a>
+    <a class="nav-link" href="04-limit-what.html#getting-rid-of-the-limirrange">Getting Rid of the LimitRange</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="04-limit-what.html#checking-the-app">Checking the App</a>
@@ -319,7 +319,7 @@ spec:
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">for i in {1..20}; do curl -sI <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | grep HTTP; done</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">for i in {1..20}; do curl -s <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | | jq .status.status ; done</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -327,17 +327,16 @@ spec:
 </div>
 <div class="listingblock console-output">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">HTTP/1.1 200 OK
-HTTP/1.1 200 OK
-HTTP/1.1 500 Internal Server Error
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">"OPERATIONAL"
+"DEGRADED"
 ...
-HTTP/1.1 200 OK
-HTTP/1.1 200 OK
-HTTP/1.1 500 Internal Server Error</code></pre>
+"OPERATIONAL"
+"DEGRADED"
+"DEGRADED"</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>In general you want find an error of this kind this way. Instead, you need a way to define a base line and detect abnormal situations, deviation from that baseline, etc.</p>
+<p>In general you won&#8217;t find an error of this kind this way. Instead, you need a way to define a base line and detect abnormal situations, deviation from that baseline, etc.</p>
 </div>
 <div class="paragraph">
 <p>One way to generate this baseline is defining custom logic/business related metrics. This means we have to do two things:</p>
@@ -353,6 +352,20 @@ HTTP/1.1 500 Internal Server Error</code></pre>
 </ul>
 </div>
 <div class="paragraph">
+<p>This api <code>/api/config</code> is meant to reveal problems&#8230;&#8203; it could be a good candidate to define our baseline.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="designing-the-metrics-baseline"><a class="anchor" href="#designing-the-metrics-baseline"></a>Designing the metrics baseline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Counting errors or calculating an error rate could be a good idea&#8230;&#8203; in general errors should tend to zero, so if that is not the case then our application is not behaving properly.</p>
+</div>
+<div class="paragraph">
+<p>Ok, so we have to create a counter and increment the counter whenever an error happens then we&#8217;ll be able to detect problems that won&#8217;t be detected otherwise.</p>
+</div>
+<div class="paragraph">
 <p>Well, let&#8217;s start by modifying the code.</p>
 </div>
 </div>
@@ -361,7 +374,48 @@ HTTP/1.1 500 Internal Server Error</code></pre>
 <h2 id="generating-metrics"><a class="anchor" href="#generating-metrics"></a>Generating Metrics</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You have to generate</p>
+<p>You&#8217;re going to add some code to generate metrics to <code>fruit-gateway</code>, this is a <a href="https://quarkus.io">Quarkus</a> application and in order to do that you need an extension (library). Let&#8217;s add the extension named <code>micrometer-registry-prometheus</code>:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+More information about the library <a href="https://quarkus.io/guides/micrometer">here</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">mvn quarkus:add-extensions -Dextensions='micrometer-registry-prometheus'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After successfully adding the library you should see this:</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">[INFO] Scanning for projects...
+[INFO]
+[INFO] ---------------&lt; com.redhat.fruit.gateway:fruit-gateway &gt;---------------
+[INFO] Building fruit-gateway 1.0.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- quarkus-maven-plugin:2.15.3.Final:add-extensions (default-cli) @ fruit-gateway ---
+[INFO] [SUCCESS] ✅  Extension io.quarkus:quarkus-micrometer-registry-prometheus has been installed
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.909 s
+[INFO] Finished at: 2023-04-25T11:01:00+02:00
+[INFO] ------------------------------------------------------------------------</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you open <code>./fruit-gateway/pom.xml</code> you&#8217;ll find this new dependency.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -371,6 +425,388 @@ HTTP/1.1 500 Internal Server Error</code></pre>
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Now that our library is in place we have plant the code that generates the counter of errors in a format Prometheus understands.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="adding-metrics-code"><a class="anchor" href="#adding-metrics-code"></a>Adding Metrics Code</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Open file <code>fruit-gateway/src/main/java/com/redhat/fruit/gateway/ApiImpl.java</code> and locate the FruitService rest client:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">    @Inject
+    @RestClient
+    FruitService fruitService;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then add the metrics registry, the SDK we need to create and feed the error counter. Place the following code right under the rest client.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If the corresponding import statement is not automatically added, add it yourself.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import io.micrometer.core.instrument.MeterRegistry;</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">    @Inject
+    MeterRegistry registry;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now search for this around line 60. Pay attention to <strong>1</strong> and <strong>2</strong> because these areas are good candidates to count errors related to api <code>/api/config</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">    Check[] checks = new Check[1];
+    String status = "OPERATIONAL";
+    try {
+        Status fruitServiceStatus = fruitService.health();
+        logger.info(String.format("FruitService status: %s",fruitServiceStatus.getStatus()));
+        String fruitServiceName = fruitService.serviceName();
+        logger.info(String.format("FruitService name: %s",fruitServiceName));
+        if (!"UP".equals(fruitServiceStatus.getStatus())) {
+            status = "DEGRADED"; <i class="conum" data-value="1"></i><b>(1)</b>
+            checks[0] = new Check(fruitServiceName, "DOWN");
+        } else {
+            checks[0] = new Check(fruitServiceName, "UP");
+        }
+    } catch (Exception e) {
+        logger.error(e, e);
+        status = "DEGRADED"; <i class="conum" data-value="2"></i><b>(2)</b>
+        checks = new Check[1];
+        checks[0] = new Check("backend-service", "DOWN");
+    }</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>This code is run if backend service reports as degraded.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>This code is run if there&#8217;s an exception checking backend.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Finally add the following code in the next line to point 1 and 2.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">registry.counter(ACC_ERRORS_COUNT_NAME).increment();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is how it should look after changes.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><strong>ACC_ERRORS_COUNT_NAME</strong> is defined in class <code>ApiResource</code> and it&#8217;s value is <code>acc_errors_count</code></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">        Check[] checks = new Check[1];
+        String status = "OPERATIONAL";
+        try {
+            Status fruitServiceStatus = fruitService.health();
+            logger.info(String.format("FruitService status: %s",fruitServiceStatus.getStatus()));
+            String fruitServiceName = fruitService.serviceName();
+            logger.info(String.format("FruitService name: %s",fruitServiceName));
+            if (!"UP".equals(fruitServiceStatus.getStatus())) {
+                status = "DEGRADED";
+                registry.counter(ACC_ERRORS_COUNT_NAME).increment(); <i class="conum" data-value="1"></i><b>(1)</b>
+                checks[0] = new Check(fruitServiceName, "DOWN");
+            } else {
+                checks[0] = new Check(fruitServiceName, "UP");
+            }
+        } catch (Exception e) {
+            logger.error(e, e);
+            status = "DEGRADED";
+            registry.counter(ACC_ERRORS_COUNT_NAME).increment(); <i class="conum" data-value="2"></i><b>(2)</b>
+            checks = new Check[1];
+            checks[0] = new Check("backend-service", "DOWN");
+        }</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Incrementing counter</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Incrementing counter</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The error counter is in place, it&#8217;s time to check if the counter is really working. We can do this locally, because the metrics are exposed by the service, no connection to Prometheus needed.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="checking-metrics-locally"><a class="anchor" href="#checking-metrics-locally"></a>Checking Metrics Locally</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>First of all, if metrics are exposed which is the uri to consume them in our quarkus application? The answer is: <code>/q/metrics</code> in the case of Spring Boot, in general you&#8217;ll find them at <code>/actuator/prometheus</code>.</p>
+</div>
+<div class="paragraph">
+<p>Open a terminal and change to dir <code>street-java-guide/fruit-gateway</code>, once there run this command:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This command starts our application (quarkus) locally in development mode.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">mvn quarkus:dev</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see an output similar to this one.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">...
+Factory] (executor-thread-1) inHeaders: [Accept=*/*,Accept-Encoding=gzip, deflate, br,Accept-Language=en-GB,en-US;q=0.9,en;q=0.8,es;q=0.7,Connection=keep-alive,Host=localhost:8080,Referer=http://localhost:8080/,sec-ch-ua="Google Chrome";v="111", "Not(A:Brand";v="8", "Chromium";v="111",sec-ch-ua-mobile=?0,sec-ch-ua-platform="macOS",Sec-Fetch-Dest=empty,Sec-Fetch-Mode=cors,Sec-Fetch-Site=same-origin,User-Agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36]
+
+10:54:12 INFO  traceId=a60da9b2cb9d20d99d9fb272bd8a1cfb, parentId=, spanId=fbb4fda668637025, sampled=true [co.re.fr.ga.re.RequestHeaderFactory] (executor-thread-1) {X-B3-SpanId=[fbb4fda668637025], x-owner=[carlos], X-B3-ParentSpanId=[], X-B3-TraceId=[a60da9b2cb9d20d99d9fb272bd8a1cfb]}
+10:54:12 INFO  traceId=a60da9b2cb9d20d99d9fb272bd8a1cfb, parentId=, spanId=fbb4fda668637025, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-1) FruitService name: fruit-service
+
+--
+Tests paused
+Press [r] to resume testing, [o] Toggle test output, [:] for the terminal, [h] for more options&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s think a little here:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The code registering and incrementing the metric will be run if a call to the api <code>/api/config</code> is sent to the port (8080) is listening locally (localhost) and fails.</p>
+</li>
+<li>
+<p>The back end is not running where it&#8217;s expected in development mode <a href="http://localhost:8081" class="bare">http://localhost:8081</a>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>So if we inspect the metrics url, and look for metric <code>acc_error_count</code> you will find nothing. You can open the URL in a browser or run this command, in a different terminal, to check this.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl -s <a href="http://localhost:8080/q/metrics" class="bare">http://localhost:8080/q/metrics</a> | grep -i acc_errors_count</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In order to see if the counter works let&#8217;s run some GET requests to the <code>/api/config</code> and see if the count matches the number of requests, in this case <strong>20</strong>.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">for i in {1..20}; do curl -s <a href="http://localhost:8080/api/config" class="bare">http://localhost:8080/api/config</a> | jq .status.status ; done</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now let&#8217;s inspect the metric again:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl -s <a href="http://localhost:8080/q/metrics" class="bare">http://localhost:8080/q/metrics</a> | grep -i acc_errors_count</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This time you should get this output, an as expected the counter should read <strong>20.0</strong>.</p>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh"># HELP acc_errors_count_total
+# TYPE acc_errors_count_total counter
+acc_errors_count_total 20.0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Awesome, the counter counts errors when checking the backend we have our baseline.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In general we should expect no errors, our baseline&#8230;&#8203; and raise and alert if that is not the case.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="deploy-metrics-enabled-version"><a class="anchor" href="#deploy-metrics-enabled-version"></a>Deploy Metrics Enabled Version</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now you have to repeat the steps necessary to <a href="05-deploy-a-new-version.html#building-a-new-version" class="xref page">build</a>, <a href="05-deploy-a-new-version.html#pushing-new-image" class="xref page">push</a>, etc. and deploy the new image as you did before.</p>
+</div>
+<div class="paragraph">
+<p>Once yo have deployed the new image, metrics should be available, let&#8217;s check if the application is already running and working properly (although you should have tested it as part of the steps referred before).</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl -s <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/hello</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="checking-metrics-in-openshift"><a class="anchor" href="#checking-metrics-in-openshift"></a>Checking Metrics In OpenShift</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once you are sure the application has been deployed correctly and apparently works as before. Run this command to</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">for i in {1..20}; do curl -s <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .status.status ; done</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now let&#8217;s inspect the metric again:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl -s <a href="https://$(oc" class="bare">https://$(oc</a> get route/fruit-gateway -o jsonpath='{.spec.host}')/q/metrics | grep -i acc_errors_count</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="creating-service-monitors"><a class="anchor" href="#creating-service-monitors"></a>Creating ServiceMonitors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Create the <code>ServiceMonitor</code> object to monitor <code>fruit-gateway</code>.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc apply -f - &lt;&lt;EOF
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: prometheus
+  name: fruit-gateway-monitor
+  namespace: street-java-%USERNAME%
+spec:
+  endpoints:
+    - interval: 30s
+      path: /q/metrics
+      port: http
+  namespaceSelector:
+    matchNames:
+    - street-java-%USERNAME%
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fruit-gateway
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alright once <code>ServiceMonitor</code> are in place Prometheus will start scrapping metrics every number of seconds (30s in our examples). This means that those metrics should be available somewhere for querying.</p>
+</div>
+<div class="paragraph">
+<p>Please open the next link in a new tab.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">https://console-openshift-console.apps.%BASE_SUBDOMAIN%/dev-monitoring/ns/street-java-%USERNAME%/metrics</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then click on <strong>Select query</strong> and choose <strong>Custom query</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Finally on the text area saying <strong>Expression (press&#8230;&#8203;)</strong> start typing <strong>acc_errors_count</strong> and choose the metric called <strong>acc_errors_count_total</strong> and type the <kbd>Return</kbd> key.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="create-alerts"><a class="anchor" href="#create-alerts"></a>Create Alerts</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once you define a baseline, then you can define alerts to be triggered whenever the baseline is crossed.</p>
+</div>
+<div class="paragraph">
+<p>Create the <code>PrometheusRule</code> object raise alerts related to <code>fruit-gateway</code>.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">oc apply -f - &lt;&lt;EOF
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: fruit-gateway-alert-rules
+  namespace: street-java-%USERNAME%
+  labels:
+    openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+spec:
+  groups:
+  - name: fruit-gateway-monitoring
+    rules:
+    - alert: too-many-accumulated-errors
+      annotations:
+        description: 'accumulated errors'
+        summary: Too many accumulated errors
+      expr: acc_errors_count_total &gt; 4
+      for: 1m
+      labels:
+        severity: warning
+EOF</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="digging-deeper"><a class="anchor" href="#digging-deeper"></a>Digging Deeper</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>But where is this error happening? How can I find out in an OpenShift cluster?</p>
 </div>
