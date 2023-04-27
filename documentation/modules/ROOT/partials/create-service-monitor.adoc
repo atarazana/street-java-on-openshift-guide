@@ -1,39 +1,27 @@
-Please copy and paste the following link and open it in a browser, then use this credentials and click on `Sign in to Red Hat Quay`.
-
-- *Username:* {username}
-- *Password:* {quay-password}
+Create the `ServiceMonitor` object to monitor `{app-name}`.
 
 [.console-input]
-[source,bash, subs="+attributes"]
+[source,sh, subs="+macros,+attributes"]
 ----
-https://{quay-server}
+oc apply -f - <<EOF
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: prometheus
+  name: {app-name}-monitor
+  namespace: {street-java-namespace}
+spec:
+  endpoints:
+    - interval: 30s
+      path: {monitor-path}
+      port: {monitor-port}
+  namespaceSelector:
+    matchNames:
+    - {street-java-namespace}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {app-name}
+EOF
 ----
 
-image::quay-installed-login-userX.png[Quay Login]
-
-Now click on `userX` to jump to the user details section.
-
-image::quay-installed-repositories-userX.png[Go to Repositories]
-
-Now go to the robot accounts area by clicking on the robot icon as in the next picture.
-
-image::quay-installed-go-to-robot-accounts-userX.png[Go to Repositories]
-
-Now click on the `Create Robot Account` button.
-
-image::quay-installed-create-robot-account-1-userX.png[Go to Repositories]
-
-Now please use the following data and click on the `Create robot Account` button:
-
-- *Name:* cicd
-- *Description:* CICD robot account
-
-image::quay-installed-create-robot-account-2-userX.png[Go to Repositories]
-
-We have to grant permissions to our robot account, expand the `PERMISSIONS` list box and select `Read`. Then click on `Close`.
-
-image::quay-installed-create-robot-account-3-userX.png[Go to Repositories]
-
-Well, now you have a robot account you can use to pull the image you need.
-
-IMPORTANT: Should you need to pull another image you will have to add new permissions to your robot account.

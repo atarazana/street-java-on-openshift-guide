@@ -54,7 +54,7 @@ Maybe in the code of your app there are errors that manifest only under certain 
 [.console-input]
 [source,sh, subs="+macros,+attributes"]
 ----
-for i in {1..20}; do curl -sI https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | grep HTTP; done
+for i in {1..20}; do curl -s https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | | jq .status.status ; done
 ----
 
 You should get an output similar to this one:
@@ -62,28 +62,67 @@ You should get an output similar to this one:
 [.console-output]
 [source,sh, subs="+macros,+attributes"]
 ----
-HTTP/1.1 200 OK
-HTTP/1.1 200 OK
-HTTP/1.1 500 Internal Server Error
+"OPERATIONAL"
+"DEGRADED"
 ...
-HTTP/1.1 200 OK
-HTTP/1.1 200 OK
-HTTP/1.1 500 Internal Server Error
+"OPERATIONAL"
+"DEGRADED"
+"DEGRADED"
 ----
 
-In general you want find an error of this kind this way. Instead, you need a way to define a base line and detect abnormal situations, deviation from that baseline, etc.
+In general you won't find an error of this kind this way. Instead, you need a way to define a base line and detect abnormal situations, deviation from that baseline, etc.
 
 One way to generate this baseline is defining custom logic/business related metrics. This means we have to do two things:
 
 - Generate prometheus compliant metrics using a library preferably from our code 
 - Configure Prometheus using a ServiceMonitor so that it can scrape the metrics we're generating.
 
+This api `/api/config` is meant to reveal problems... it could be a good candidate to define our baseline.
+
+[#designing-the-metrics-baseline]
+== Designing the metrics baseline
+
+Counting errors or calculating an error rate could be a good idea... in general errors should tend to zero, so if that is not the case then our application is not behaving properly.
+
+Ok, so we have to create a counter and increment the counter whenever an error happens then we'll be able to detect problems that won't be detected otherwise.
+
 Well, let's start by modifying the code.
 
 [#generating-metrics]
 == Generating Metrics
 
-You have to generate
+You're going to add some code to generate metrics to `fruit-gateway`, this is a link:https://quarkus.io[Quarkus] application and in order to do that you need an extension (library). Let's add the extension named `micrometer-registry-prometheus`:
+
+NOTE: More information about the library link:https://quarkus.io/guides/micrometer[here].
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+mvn quarkus:add-extensions -Dextensions='micrometer-registry-prometheus'
+----
+
+After successfully adding the library you should see this:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< com.redhat.fruit.gateway:fruit-gateway >---------------
+[INFO] Building fruit-gateway 1.0.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- quarkus-maven-plugin:2.15.3.Final:add-extensions (default-cli) @ fruit-gateway ---
+[INFO] [SUCCESS] ✅  Extension io.quarkus:quarkus-micrometer-registry-prometheus has been installed
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.909 s
+[INFO] Finished at: 2023-04-25T11:01:00+02:00
+[INFO] ------------------------------------------------------------------------
+----
+
+If you open `./fruit-gateway/pom.xml` you'll find this new dependency.
 
 [source,yaml,attributes]
 ----
@@ -94,7 +133,266 @@ You have to generate
 
 ----
 
+Now that our library is in place we have plant the code that generates the counter of errors in a format Prometheus understands.
 
+[#adding-metrics-code]
+== Adding Metrics Code
+
+Open file `fruit-gateway/src/main/java/com/redhat/fruit/gateway/ApiImpl.java` and locate the FruitService rest client:
+
+[source,java,attributes]
+----
+    @Inject
+    @RestClient
+    FruitService fruitService;
+----
+
+Then add the metrics registry, the SDK we need to create and feed the error counter. Place the following code right under the rest client.
+
+[NOTE]
+====
+If the corresponding import statement is not automatically added, add it yourself.
+
+[source,java,attributes]
+----
+import io.micrometer.core.instrument.MeterRegistry;
+----
+
+====
+
+[source,java,attributes]
+----
+    @Inject
+    MeterRegistry registry;
+----
+
+Now search for this around line 60. Pay attention to *1* and *2* because these areas are good candidates to count errors related to api `/api/config`.
+
+[source,java,attributes]
+----
+    Check[] checks = new Check[1];
+    String status = "OPERATIONAL";
+    try {
+        Status fruitServiceStatus = fruitService.health();
+        logger.info(String.format("FruitService status: %s",fruitServiceStatus.getStatus()));
+        String fruitServiceName = fruitService.serviceName();
+        logger.info(String.format("FruitService name: %s",fruitServiceName));
+        if (!"UP".equals(fruitServiceStatus.getStatus())) {
+            status = "DEGRADED"; <1>
+            checks[0] = new Check(fruitServiceName, "DOWN");
+        } else {
+            checks[0] = new Check(fruitServiceName, "UP");
+        }
+    } catch (Exception e) {
+        logger.error(e, e);
+        status = "DEGRADED"; <2>
+        checks = new Check[1];
+        checks[0] = new Check("backend-service", "DOWN");
+    }
+----
+<1> This code is run if backend service reports as degraded.
+<2> This code is run if there's an exception checking backend.
+
+Finally add the following code in the next line to point 1 and 2.
+
+[source,java,attributes]
+----
+registry.counter(ACC_ERRORS_COUNT_NAME).increment(); 
+----
+
+This is how it should look after changes.
+
+[NOTE]
+====
+*ACC_ERRORS_COUNT_NAME* is defined in class `ApiResource` and it's value is `acc_errors_count`
+====
+
+[source,java,attributes]
+----
+        Check[] checks = new Check[1];
+        String status = "OPERATIONAL";
+        try {
+            Status fruitServiceStatus = fruitService.health();
+            logger.info(String.format("FruitService status: %s",fruitServiceStatus.getStatus()));
+            String fruitServiceName = fruitService.serviceName();
+            logger.info(String.format("FruitService name: %s",fruitServiceName));
+            if (!"UP".equals(fruitServiceStatus.getStatus())) {
+                status = "DEGRADED";
+                registry.counter(ACC_ERRORS_COUNT_NAME).increment(); <1>
+                checks[0] = new Check(fruitServiceName, "DOWN");
+            } else {
+                checks[0] = new Check(fruitServiceName, "UP");
+            }
+        } catch (Exception e) {
+            logger.error(e, e);
+            status = "DEGRADED";
+            registry.counter(ACC_ERRORS_COUNT_NAME).increment(); <2>
+            checks = new Check[1];
+            checks[0] = new Check("backend-service", "DOWN");
+        }
+----
+<1> Incrementing counter
+<2> Incrementing counter
+
+The error counter is in place, it's time to check if the counter is really working. We can do this locally, because the metrics are exposed by the service, no connection to Prometheus needed.
+
+[#checking-metrics-locally]
+== Checking Metrics Locally
+
+First of all, if metrics are exposed which is the uri to consume them in our quarkus application? The answer is: `/q/metrics` in the case of Spring Boot, in general you'll find them at `/actuator/prometheus`.
+
+// Well, time to check metrics. Even though we have made changes to `fruit-gateway` in order to see the metr  Open a terminal and change to dir `{folder}/fruit-service`, once there run this command:
+
+// NOTE: This command starts the backend service (Spring) locally in development mode using profile `local`.
+
+// [.console-input]
+// [source,sh, subs="+macros,+attributes"]
+// ----
+// mvn clean spring-boot:run -Dspring-boot.run.profiles=local -Plocal
+// ----
+
+Open a terminal and change to dir `{folder}/fruit-gateway`, once there run this command:
+
+NOTE: This command starts our application (quarkus) locally in development mode.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+mvn quarkus:dev
+----
+
+You should see an output similar to this one.
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+...
+Factory] (executor-thread-1) inHeaders: [Accept=*/*,Accept-Encoding=gzip, deflate, br,Accept-Language=en-GB,en-US;q=0.9,en;q=0.8,es;q=0.7,Connection=keep-alive,Host=localhost:8080,Referer=http://localhost:8080/,sec-ch-ua="Google Chrome";v="111", "Not(A:Brand";v="8", "Chromium";v="111",sec-ch-ua-mobile=?0,sec-ch-ua-platform="macOS",Sec-Fetch-Dest=empty,Sec-Fetch-Mode=cors,Sec-Fetch-Site=same-origin,User-Agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36]
+
+10:54:12 INFO  traceId=a60da9b2cb9d20d99d9fb272bd8a1cfb, parentId=, spanId=fbb4fda668637025, sampled=true [co.re.fr.ga.re.RequestHeaderFactory] (executor-thread-1) {X-B3-SpanId=[fbb4fda668637025], x-owner=[carlos], X-B3-ParentSpanId=[], X-B3-TraceId=[a60da9b2cb9d20d99d9fb272bd8a1cfb]}
+10:54:12 INFO  traceId=a60da9b2cb9d20d99d9fb272bd8a1cfb, parentId=, spanId=fbb4fda668637025, sampled=true [co.re.fr.ga.ApiImpl] (executor-thread-1) FruitService name: fruit-service
+
+--
+Tests paused
+Press [r] to resume testing, [o] Toggle test output, [:] for the terminal, [h] for more options>
+----
+
+Let's think a little here:
+
+. The code registering and incrementing the metric will be run if a call to the api `/api/config` is sent to the port (8080) is listening locally (localhost) and fails.
+. The back end is not running where it's expected in development mode http://localhost:8081.
+
+So if we inspect the metrics url, and look for metric `acc_error_count` you will find nothing. You can open the URL in a browser or run this command, in a different terminal, to check this.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+curl -s http://localhost:8080/q/metrics | grep -i acc_errors_count
+----
+
+In order to see if the counter works let's run some GET requests to the `/api/config` and see if the count matches the number of requests, in this case *20*.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+for i in {1..20}; do curl -s http://localhost:8080/api/config | jq .status.status ; done
+----
+
+Now let's inspect the metric again:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+curl -s http://localhost:8080/q/metrics | grep -i acc_errors_count
+----
+
+This time you should get this output, an as expected the counter should read *20.0*.
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+# HELP acc_errors_count_total  
+# TYPE acc_errors_count_total counter
+acc_errors_count_total 20.0
+----
+
+Awesome, the counter counts errors when checking the backend we have our baseline.
+
+NOTE: In general we should expect no errors, our baseline... and raise and alert if that is not the case.
+
+[#deploy-metrics-enabled-version]
+== Deploy Metrics Enabled Version
+
+Now you have to repeat the steps necessary to xref:05-deploy-a-new-version.adoc#building-a-new-version[build], xref:05-deploy-a-new-version.adoc#pushing-new-image[push], etc. and deploy the new image as you did before.
+
+Once yo have deployed the new image, metrics should be available, let's check if the application is already running and working properly (although you should have tested it as part of the steps referred before).
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+curl -s https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/hello
+----
+
+[#checking-metrics-in-openshift]
+== Checking Metrics In OpenShift
+
+Once you are sure the application has been deployed correctly and apparently works as before. Run this command to 
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+for i in {1..20}; do curl -s https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/api/config | jq .status.status ; done
+----
+
+Now let's inspect the metric again:
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+curl -s https://$(oc get route/fruit-gateway -o jsonpath='{.spec.host}')/q/metrics | grep -i acc_errors_count
+----
+
+[#creating-service-monitors]
+== Creating ServiceMonitors
+
+:app-name: fruit-gateway
+:monitor-path: /q/metrics
+:monitor-port: http
+include::partial$create-service-monitor.adoc[]
+
+// We have created the service monitor to allow Prometheus consuming the metrics we just created.
+
+// :app-name: fruit-service
+// :monitor-path: /actuator/prometheus
+// :monitor-port: http
+// include::partial$create-service-monitor.adoc[]
+
+Alright once `ServiceMonitor` are in place Prometheus will start scrapping metrics every number of seconds (30s in our examples). This means that those metrics should be available somewhere for querying.
+
+Please open the next link in a new tab.
+
+[.console-input]
+[source,bash, subs="+attributes"]
+----
+https://{openshift-console-host}/dev-monitoring/ns/{street-java-namespace}/metrics
+----
+
+Then click on *Select query* and choose *Custom query*.
+
+Finally on the text area saying *Expression (press...)* start typing *acc_errors_count* and choose the metric called *acc_errors_count_total* and type the kbd:[Return] key.
+
+
+
+[#create-alerts]
+== Create Alerts
+
+Once you define a baseline, then you can define alerts to be triggered whenever the baseline is crossed.
+
+:app-name: fruit-gateway
+include::partial$create-alert.adoc[]
+
+[#digging-deeper]
+== Digging Deeper
 
 But where is this error happening? How can I find out in an OpenShift cluster?
 

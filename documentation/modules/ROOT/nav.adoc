@@ -19,7 +19,7 @@ endif::[]
 ** xref:04-limit-what.adoc#checking-deployments[Checking Deployments]
 ** xref:04-limit-what.adoc#limits[Limits]
 ** xref:04-limit-what.adoc#limitrange-anatomy[LimitRange Anatomy]
-** xref:04-limit-what.adoc#getting-rid-of-the-limirange[Getting Rid of the LimitRange]
+** xref:04-limit-what.adoc#getting-rid-of-the-limirrange[Getting Rid of the LimitRange]
 ** xref:04-limit-what.adoc#checking-the-app[Checking the App]
 
 * xref:05-deploy-a-new-version.adoc[5. Deploy New Version]

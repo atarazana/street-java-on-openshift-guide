@@ -1,6 +1,9 @@
 :experimental: true
 :source-highlighter: highlightjs
 
+:tutorial-url: https://github.com/atarazana/street-java-on-openshift.git
+:folder: street-java-guide
+
 :base-domain: %BASE_SUBDOMAIN%
 :api-domain: {base-domain}:6443
 :cluster-subdomain: apps.{base-domain}

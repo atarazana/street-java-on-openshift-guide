@@ -88,7 +88,7 @@ spec:
 <3> Max limits per container
 <4> This area defines limits per pod instead of per container
 
-[#getting-rid-of-the-limirange]
+[#getting-rid-of-the-limitrange]
 == Getting Rid of the LimitRange
 
 We could modify the LimitRange, increase the limits or in real world scenarios, request an administrator to do it on our behalf. In this lab you have permissions to update or delete the object... let's make it easy... let's delete the object.
@@ -107,7 +107,29 @@ Now let's see if the deployments progress properly.
 oc get deploy -n {street-java-namespace}
 ----
 
-If deployments are still not ready, try this command:
+If you try immediately you\'ll see something like:
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+fruit-gateway      0/1     0            0           48s
+fruit-service      0/1     0            0           48s
+fruit-service-db   0/1     0            0           48s
+----
+
+Repeat the command after a minute or so. You should get something like.
+
+[.console-output]
+[source,sh, subs="+macros,+attributes"]
+----
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+fruit-gateway      1/1     1            1           105s
+fruit-service      1/1     1            1           105s
+fruit-service-db   1/1     1            1           105s
+----
+
+NOTE: If deployments are still not ready, try this command:
 
 [.console-input]
 [source,sh, subs="+macros,+attributes"]

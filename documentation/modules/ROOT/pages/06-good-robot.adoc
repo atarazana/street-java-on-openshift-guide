@@ -118,7 +118,19 @@ Let's check everything is fine, the next command should show the secrets associa
 [.console-input]
 [source,bash, subs="+macros,+attributes"]
 ----
-oc get deployment/fruit-gateway -n {street-java-namespace} -o json | jq .spec.template.spec.imagePullSecret
+oc get deployment/fruit-gateway -n {street-java-namespace} -o json | jq .spec.template.spec.imagePullSecrets
+----
+
+You should get this:
+
+[.console-output]
+[source,bash, subs="+macros,+attributes"]
+----
+[
+  {
+    "name": "street-java-pull-secret"
+  }
+]
 ----
 
 [#did-it-work]

@@ -1,0 +1,28 @@
+Create the `PrometheusRule` object raise alerts related to `{app-name}`.
+
+[.console-input]
+[source,sh, subs="+macros,+attributes"]
+----
+oc apply -f - <<EOF
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {app-name}-alert-rules
+  namespace: {street-java-namespace}
+  labels:
+    openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+spec:
+  groups:
+  - name: {app-name}-monitoring
+    rules:
+    - alert: too-many-accumulated-errors
+      annotations:
+        description: 'accumulated errors'
+        summary: Too many accumulated errors
+      expr: acc_errors_count_total > 4
+      for: 1m
+      labels:
+        severity: warning
+EOF
+----
+

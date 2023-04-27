@@ -30,6 +30,4 @@ endif::[]
 
 Even though in a following chapter you will need to fork this repository you still need to clone it locally first to bootstrap the environment.
 
-:tutorial-url: https://github.com/atarazana/street-java-on-openshift.git
-:folder: street-java-guide
 include::partial$download-sources.adoc[]
